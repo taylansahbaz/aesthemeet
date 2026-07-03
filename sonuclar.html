@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Aesthemeet - Saç Ekimi Sonuçları. Başarılı operasyonlarımıza ve hastalarımızın öncesi/sonrası fotoğraflarına göz atın.">
+    <title>Sonuçlar - Aesthemeet Saç Ekimi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css?v=61">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+</head>
+
+<body class="inner-page">
+    <!-- Header & Navigation -->
+    <header class="header">
+        <div class="container header-content">
+            <div class="logo">
+                <a href="index.html">
+                    <img src="aesthemeet_images/logo.svg" alt="Aesthemeet Logo" class="logo-img">
+                </a>
+            </div>
+            <nav class="navbar">
+                <ul class="nav-links">
+                    <li><a href="index.html#home">Anasayfa</a></li>
+                    <li><a href="hizmetler.html">Hizmetler</a></li>
+                    <li><a href="sonuclar.html" class="active">Sonuçlar</a></li>
+                    <li><a href="index.html#faq">SSS</a></li>
+                    <li><a href="index.html#contact">İletişim</a></li>
+                </ul>
+            </nav>
+            <div class="header-actions">
+                <div class="language-selector">
+                    <a href="#" class="lang-active">TR</a>
+                    <span>|</span>
+                    <a href="#en">EN</a>
+                    <span>|</span>
+                    <a href="#de">DE</a>
+                </div>
+                <button class="theme-toggle" id="themeToggle">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                <button class="menu-toggle" id="menuToggle">☰</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Results Hero Section -->
+    <section class="results-hero-section" style="background-image: url('aesthemeet_images/banner-3.jpg');">
+        <div class="carousel-section-overlay"></div>
+        <div class="container relative-z">
+            <div class="results-hero-content text-center">
+                <span class="service-badge premium" style="margin: 0 auto 20px;">Öncesi & Sonrası</span>
+                <h1 class="text-white mb-4" style="font-size: 56px; font-weight: 700;">Değişime Tanık Olun</h1>
+                <p class="text-white" style="font-size: 18px; opacity: 0.9; max-width: 600px; margin: 0 auto;">
+                    Dünyanın dört bir yanından gelen hastalarımızın Aesthemeet ile yakaladığı doğal ve kalıcı dönüşümleri inceleyin.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Portfolio Gallery Section -->
+    <section class="portfolio-section">
+        <div class="container">
+            <div class="section-header text-center">
+                <h2>Başarı Hikayelerimiz</h2>
+                <p>Gerçek hastalarımızın tüm şeffaflığıyla değişim süreçleri</p>
+            </div>
+            
+            <!-- Filter Tabs -->
+            <div class="portfolio-filters">
+                <button class="filter-btn active" data-filter="all">Tümü</button>
+                <button class="filter-btn" data-filter="fue">FUE Tekniği</button>
+                <button class="filter-btn" data-filter="safir">Safir FUE</button>
+                <button class="filter-btn" data-filter="dhi">DHI Tekniği</button>
+                <button class="filter-btn" data-filter="kadin">Kadın Saç Ekimi</button>
+            </div>
+
+            <!-- Gallery Grid -->
+            <div class="portfolio-grid">
+                <!-- Case 1 -->
+                <div class="portfolio-item fue safir">
+                    <div class="portfolio-card glass-panel">
+                        <div class="portfolio-img">
+                            <img src="aesthemeet_images/sac-ekim001.jpg" alt="FUE Sonucu">
+                            <div class="portfolio-overlay">
+                                <span class="overlay-text">Detayları İncele</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </div>
+                        </div>
+                        <div class="portfolio-info">
+                            <div class="portfolio-tags">
+                                <span class="tag">Safir FUE</span>
+                                <span class="tag tag-light">4500 Greft</span>
+                            </div>
+                            <h3>Ahmet Y. - 8. Ay Sonucu</h3>
+                            <p>Ön hat restorasyonu ve tepe bölgesinde maksimum yoğunluk sağlandı.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Case 2 -->
+                <div class="portfolio-item fue dhi">
+                    <div class="portfolio-card glass-panel">
+                        <div class="portfolio-img">
+                            <img src="aesthemeet_images/sac-ekim002.jpg" alt="DHI Sonucu">
+                            <div class="portfolio-overlay">
+                                <span class="overlay-text">Detayları İncele</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </div>
+                        </div>
+                        <div class="portfolio-info">
+                            <div class="portfolio-tags">
+                                <span class="tag">DHI Tekniği</span>
+                                <span class="tag tag-light">3200 Greft</span>
+                            </div>
+                            <h3>Michael S. - 12. Ay Sonucu</h3>
+                            <p>Tıraşsız yöntem ile saç araları sıkılaştırıldı, tamamen doğal görünüm.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Case 3 -->
+                <div class="portfolio-item fue">
+                    <div class="portfolio-card glass-panel">
+                        <div class="portfolio-img">
+                            <img src="aesthemeet_images/sac-ekim003.jpg" alt="FUE Sonucu 2">
+                            <div class="portfolio-overlay">
+                                <span class="overlay-text">Detayları İncele</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </div>
+                        </div>
+                        <div class="portfolio-info">
+                            <div class="portfolio-tags">
+                                <span class="tag">FUE Tekniği</span>
+                                <span class="tag tag-light">5000+ Greft</span>
+                            </div>
+                            <h3>Tarik K. - 10. Ay Sonucu</h3>
+                            <p>Geniş açıklığı olan vakada tek seansta homojen kaplama elde edildi.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Case 4 -->
+                <div class="portfolio-item kadin">
+                    <div class="portfolio-card glass-panel">
+                        <div class="portfolio-img">
+                            <img src="aesthemeet_images/about-4.jpg" alt="Kadın Saç Ekimi">
+                            <div class="portfolio-overlay">
+                                <span class="overlay-text">Detayları İncele</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </div>
+                        </div>
+                        <div class="portfolio-info">
+                            <div class="portfolio-tags">
+                                <span class="tag">Kadın Saç Ekimi</span>
+                                <span class="tag tag-light">2500 Greft</span>
+                            </div>
+                            <h3>Elena M. - 6. Ay Sonucu</h3>
+                            <p>Kadın tipi dökülmede alın çizgisi aşağı çekilerek yoğunluk artırıldı.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Case 5 (Sakal Placeholder) -->
+                <div class="portfolio-item dhi">
+                    <div class="portfolio-card glass-panel">
+                        <div class="portfolio-img">
+                            <img src="aesthemeet_images/sac-ekim004.jpg" alt="Sakal Ekimi Sonucu">
+                            <div class="portfolio-overlay">
+                                <span class="overlay-text">Detayları İncele</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </div>
+                        </div>
+                        <div class="portfolio-info">
+                            <div class="portfolio-tags">
+                                <span class="tag">Sakal Ekimi</span>
+                                <span class="tag tag-light">1200 Greft</span>
+                            </div>
+                            <h3>Caner B. - 8. Ay Sonucu</h3>
+                            <p>Yanak ve çene altındaki seyrek bölümler, enseden alınan köklerle doğal şekilde dolduruldu.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Video Testimonials Section -->
+    <section class="video-testimonials" style="background: var(--bg-light); padding: 100px 0;">
+        <div class="container">
+            <div class="section-header text-center" style="margin-bottom: 50px;">
+                <h2>Video Referanslar</h2>
+                <p>Hastalarımız kendi deneyimlerini anlatıyor</p>
+            </div>
+            
+            <div class="video-grid">
+                <div class="video-card">
+                    <div class="video-thumbnail" style="background-image: url('aesthemeet_images/banner-1.jpg');">
+                        <div class="play-btn">
+                            <i class="fa-solid fa-play"></i>
+                        </div>
+                        <div class="video-duration">02:45</div>
+                    </div>
+                    <div class="video-info">
+                        <h4>İngiltere'den Gelen Hastamızın Hikayesi</h4>
+                        <p>John D. (Safir FUE - 4200 Greft)</p>
+                    </div>
+                </div>
+
+                <div class="video-card">
+                    <div class="video-thumbnail" style="background-image: url('aesthemeet_images/who-we-are.jpg');">
+                        <div class="play-btn">
+                            <i class="fa-solid fa-play"></i>
+                        </div>
+                        <div class="video-duration">03:12</div>
+                    </div>
+                    <div class="video-info">
+                        <h4>DHI Tekniği İle Tıraşsız Saç Ekimi Süreci</h4>
+                        <p>Markus W. (DHI - 3000 Greft)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Final Section -->
+    <section class="contact-final-section" id="contact">
+        <div class="container cfs-layout">
+
+            <!-- Left: Contact Info -->
+            <div class="cfs-left">
+                <h2>Bizimle İletişime Geçin</h2>
+                <p>Sorularınız veya geri bildirimleriniz için
+                    bize ulaşabilirsiniz...</p>
+
+                <div class="cfs-info-group">
+                    <div class="cfs-info-item">
+                        <div class="cfs-icon"><i class="fa-solid fa-phone-volume"></i></div>
+                        <div class="cfs-text">
+                            <h4>Telefon:</h4>
+                            <p>+90 (212) 555-0123</p>
+                        </div>
+                    </div>
+                    <div class="cfs-info-item">
+                        <div class="cfs-icon"><i class="fa-solid fa-envelope-open-text"></i></div>
+                        <div class="cfs-text">
+                            <h4>E-posta Adresi:</h4>
+                            <p>info@aesthemeet.com</p>
+                        </div>
+                    </div>
+                    <div class="cfs-info-item">
+                        <div class="cfs-icon"><i class="fa-solid fa-map-location-dot"></i></div>
+                        <div class="cfs-text">
+                            <h4>Lokasyon:</h4>
+                            <p>İstanbul, Türkiye</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cfs-copyright">
+                    <p>&copy; 2024 Aesthemeet. Tüm hakları saklıdır.</p>
+                </div>
+            </div>
+
+            <!-- Right: Form Card -->
+            <div class="cfs-right">
+                <div class="cfs-form-card">
+                    <h3>Size yardımcı olmak için buradayız!</h3>
+                    <form id="consultationForm">
+                        <div class="cfs-form-row">
+                            <input type="text" placeholder="Ad Soyad" required>
+                            <input type="email" placeholder="E-posta Adresi" required>
+                        </div>
+                        <input type="text" placeholder="Konu" required>
+                        <textarea placeholder="Mesajınız" rows="5" required></textarea>
+
+                        <button type="submit" class="btn-submit-icon">
+                            MESAJ GÖNDER
+                            <span class="icon-circle"><i class="fa-solid fa-arrow-right"></i></span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <script src="script.js?v=48"></script>
+</body>
+
+</html>
