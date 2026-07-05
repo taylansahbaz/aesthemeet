@@ -117,30 +117,91 @@ faqItems.forEach(item => {
 
 // ========== FORM SUBMISSION ==========
 const consultationForm = document.getElementById('consultationForm');
+let iti;
 
 if (consultationForm) {
+    const phoneInput = consultationForm.querySelector('.phone-input');
+    if (phoneInput && window.intlTelInput) {
+        iti = window.intlTelInput(phoneInput, {
+            initialCountry: "tr",
+            preferredCountries: ["tr", "de", "gb", "us"],
+            utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.2.1/js/utils.js"
+        });
+    }
+
     consultationForm.addEventListener('submit', function (e) {
         e.preventDefault();
 
         // Get form values
         const name = this.querySelector('input[type="text"]').value;
         const email = this.querySelector('input[type="email"]').value;
-        const phone = this.querySelector('input[type="tel"]').value;
-        const service = this.querySelector('select').value;
+        const phone = iti ? iti.getNumber() : (this.querySelector('input[type="tel"]')?.value || '');
         const message = this.querySelector('textarea').value;
+        const lang = document.documentElement.lang || 'tr';
 
-        // Create FormData object
+        // Create localized FormData object
         const formData = new FormData();
-        formData.append('name', name);
-        formData.append('email', email);
-        formData.append('phone', phone);
-        formData.append('service', service);
-        formData.append('message', message);
+        
+        if (lang === 'tr') {
+            formData.append('Ad Soyad', name);
+            formData.append('E-posta', email);
+            formData.append('Telefon Numarası', phone);
+            formData.append('Mesaj', message);
+        } else if (lang === 'de') {
+            formData.append('Name', name);
+            formData.append('E-Mail', email);
+            formData.append('Telefon', phone);
+            formData.append('Nachricht', message);
+        } else {
+            formData.append('Full Name', name);
+            formData.append('Email', email);
+            formData.append('Phone Number', phone);
+            formData.append('Message', message);
+        }
 
-        // For now, show a success message
-        // In production, you would send this to a backend service
-        alert('Danışmanlık talebiniz alındı! Kısa sürede sizinle iletişime geçeceğiz.');
-        this.reset();
+        // Language-aware success/error messages
+        const successMessages = {
+            'tr': 'Danışmanlık talebiniz alındı! Kısa sürede sizinle iletişime geçeceğiz.',
+            'en': 'Your consultation request has been received! We will contact you shortly.',
+            'de': 'Ihre Beratungsanfrage wurde erhalten! Wir werden uns in Kürze bei Ihnen melden.'
+        };
+        const errorMessages = {
+            'tr': 'Form gönderilirken bir hata oluştu. Lütfen WhatsApp üzerinden ulaşın.',
+            'en': 'An error occurred while sending the form. Please contact us via WhatsApp.',
+            'de': 'Beim Senden des Formulars ist ein Fehler aufgetreten. Bitte kontaktieren Sie uns über WhatsApp.'
+        };
+
+        const formAction = this.getAttribute('action');
+
+        // Submit via AJAX to Formspree
+        if (formAction && formAction.includes('formspree.io')) {
+            fetch(formAction, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            }).then(response => {
+                if (response.ok) {
+                    alert(successMessages[lang] || successMessages['tr']);
+                    this.reset();
+                } else {
+                    response.json().then(data => {
+                        if (Object.hasOwn(data, 'errors')) {
+                            alert(data["errors"].map(error => error["message"]).join(", "));
+                        } else {
+                            alert(errorMessages[lang] || errorMessages['tr']);
+                        }
+                    })
+                }
+            }).catch(error => {
+                alert(errorMessages[lang] || errorMessages['tr']);
+            });
+        } else {
+            // Fallback if Formspree action isn't set properly
+            alert(successMessages[lang] || successMessages['tr']);
+            this.reset();
+        }
     });
 }
 

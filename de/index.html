@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Aesthemeet - Natürliche und dauerhafte Haartransplantation. Lassen Sie sich von unseren Fachärzten mit FUE- und DHI-Techniken beraten.">
+    <meta name="keywords"
+        content="haartransplantation, fue technik, dhi technik, haarausfall, haarwiederherstellung, istanbul">
+    <title>Aesthemeet - Natürliche und Dauerhafte Haartransplantation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../styles.css?v=52">
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.2.1/css/intlTelInput.css">
+</head>
+
+<body>
+    <!-- Header & Navigation -->
+    <header class="header">
+        <div class="container header-content">
+            <div class="logo">
+                <a href="index.html">
+                    <img src="../aesthemeet_images/logo.svg" alt="Aesthemeet Logo" class="logo-img">
+                </a>
+            </div>
+            <nav class="navbar">
+                <ul class="nav-links">
+                    <li><a href="#home">Startseite</a></li>
+                    <li><a href="#services">Leistungen</a></li>
+                    <li><a href="#why-us">Warum Wir?</a></li>
+                    <li><a href="#results">Ergebnisse</a></li>
+                    <li><a href="#faq">FAQ</a></li>
+                    <li><a href="#contact">Kontakt</a></li>
+                </ul>
+            </nav>
+            <div class="header-actions">
+                <div class="language-selector">
+                    <a href="../tr/index.html">TR</a>
+                    <span>|</span>
+                    <a href="../en/index.html">EN</a>
+                    <span>|</span>
+                    <a href="index.html" class="lang-active">DE</a>
+                </div>
+                <button class="theme-toggle" id="themeToggle">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                <button class="menu-toggle" id="menuToggle">☰</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Carousel Section -->
+    <section class="hero" id="home">
+        <div class="carousel-container">
+            <div class="carousel-slide active" style="background-image: url('../aesthemeet_images/banner-1.jpg');">
+                <div class="carousel-overlay">
+                    <div class="carousel-content">
+                        <span class="carousel-tag">FUE- & DHI-TECHNIKEN</span>
+                        <h1>Wir wenden die neuesten Technologien bei der Haartransplantation an.</h1>
+                        <p>Natürlich aussehende Ergebnisse mit modernsten Technologien und unseren erfahrenen Ärzten</p>
+                        <a href="#contact" class="btn btn-primary">Kostenlose Beratung Erhalten</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="carousel-slide" style="background-image: url('../aesthemeet_images/banner-2.jpg');">
+                <div class="carousel-overlay">
+                    <div class="carousel-content">
+                        <span class="carousel-tag">NATÜRLICHES AUSSEHEN</span>
+                        <h1>Wir bieten dauerhafte Lösungen mit unserem Expertenteam.</h1>
+                        <p>Jeder Eingriff wird mit höchster Präzision durchgeführt und garantiert natürliche und
+                            zuverlässige Ergebnisse</p>
+                        <a href="#contact" class="btn btn-primary">Expertenmeinung Einholen</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="carousel-slide" style="background-image: url('../aesthemeet_images/banner-3.jpg');">
+                <div class="carousel-overlay">
+                    <div class="carousel-content">
+                        <span class="carousel-tag">ERFOLGREICHE ERGEBNISSE</span>
+                        <h1>Wir sind stolz auf Tausende zufriedener Patienten.</h1>
+                        <p>Wir arbeiten mit echten Patientenreferenzen und nachgewiesenen Erfolgsraten</p>
+                        <a href="#results" class="btn btn-primary">Ergebnisse Ansehen</a>
+                    </div>
+                </div>
+            </div>
+
+            <button class="carousel-btn prev" id="prevBtn">❮</button>
+            <button class="carousel-btn next" id="nextBtn">❯</button>
+            <div class="carousel-dots" id="carouselDots"></div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="services" id="services">
+        <div class="container">
+            <div class="section-header">
+                <h2>Haartransplantations-Techniken</h2>
+            </div>
+
+            <div class="services-grid">
+
+                <div class="service-card" onclick="window.location.href='leistungen.html'" style="cursor: pointer;">
+                    <div class="service-image">
+                        <img src="../aesthemeet_images/safirfue.png" alt="Saphir FUE">
+                    </div>
+                    <div class="service-info">
+                        <h3>Saphir FUE</h3>
+                        <p>Eine Technik für präzisere und dichtere Transplantationen mit Saphirklingen.</p>
+                        <div style="margin-top: 15px; font-weight: 600; color: var(--accent-color); font-size: 15px; display: flex; align-items: center; gap: 8px;">
+                            Mehr erfahren <i class="fa-solid fa-arrow-right"></i></div>
+                    </div>
+                </div>
+
+                <div class="service-card" onclick="window.location.href='leistungen.html'" style="cursor: pointer;">
+                    <div class="service-image">
+                        <img src="../aesthemeet_images/female-hair-transplant.jpg" alt="Haartransplantation bei Frauen">
+                    </div>
+                    <div class="service-info">
+                        <h3>Haartransplantation bei Frauen</h3>
+                        <p>Unrasierte und ästhetische Behandlungen, die die Haardichte für Frauen erhöhen.</p>
+                        <div style="margin-top: 15px; font-weight: 600; color: var(--accent-color); font-size: 15px; display: flex; align-items: center; gap: 8px;">
+                            Mehr erfahren <i class="fa-solid fa-arrow-right"></i></div>
+                    </div>
+                </div>
+
+                <div class="service-card" onclick="window.location.href='leistungen.html'" style="cursor: pointer;">
+                    <div class="service-image">
+                        <img src="../aesthemeet_images/esteda-sakal-ekimi-6.jpg" alt="Bart- und Augenbrauentransplantation">
+                    </div>
+                    <div class="service-info">
+                        <h3>Bart & Augenbrauen</h3>
+                        <p>Natürliche und dicht aussehende Transplantationen, die an Ihre Gesichtszüge angepasst sind.</p>
+                        <div style="margin-top: 15px; font-weight: 600; color: var(--accent-color); font-size: 15px; display: flex; align-items: center; gap: 8px;">
+                            Mehr erfahren <i class="fa-solid fa-arrow-right"></i></div>
+                    </div>
+                </div>
+
+                <div class="service-card" onclick="window.location.href='leistungen.html'" style="cursor: pointer;">
+                    <div class="service-image">
+                        <img src="../aesthemeet_images/sac-mezoterapi-tedavisi.webp" alt="Mesotherapie">
+                    </div>
+                    <div class="service-info">
+                        <h3>Mesotherapie</h3>
+                        <p>Vitaminbehandlung, die Haarfollikel nährt, stärkt und Haarausfall reduziert.</p>
+                        <div style="margin-top: 15px; font-weight: 600; color: var(--accent-color); font-size: 15px; display: flex; align-items: center; gap: 8px;">
+                            Mehr erfahren <i class="fa-solid fa-arrow-right"></i></div>
+                    </div>
+                </div>
+            </div>
+                        
+            <div class="section-footer" style="text-align: center; margin-top: 40px;">
+                <a href="leistungen.html" class="btn btn-primary btn-large">Alle Leistungen Entdecken</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us Section -->
+    <section class="why-us" id="why-us">
+        <div class="container">
+            <div class="section-header">
+                <h2>Warum Sollten Sie Uns Wählen?</h2>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="fa-solid fa-user-doctor"></i></div>
+                    <h3>Fachärzte</h3>
+                    <p>International zertifizierte und erfahrene Haartransplantations-Spezialisten</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="fa-solid fa-hospital"></i></div>
+                    <h3>Moderne Technologie</h3>
+                    <p>Modernste Ausstattung und fortschrittliche Methoden</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                    <h3>Garantiertes Verfahren</h3>
+                    <p>Alle Eingriffe sind garantiert und mit Nachsorge-Unterstützung versehen</p>
+                </div>
+                <div class="stat-item" data-delay="0">
+                    <div class="stat-number-wrapper">
+                        <div class="stat-number" data-target="5000">0</div><span class="stat-plus">+</span>
+                    </div>
+                    <p class="stat-label">Haartransplantationen</p>
+                </div>
+                <div class="stat-item" data-delay="1">
+                    <div class="stat-number-wrapper">
+                        <div class="stat-number" data-target="30">0</div><span class="stat-plus">+</span>
+                    </div>
+                    <p class="stat-label">Fachärzte</p>
+                </div>
+                <div class="stat-item" data-delay="2">
+                    <div class="stat-number-wrapper">
+                        <div class="stat-number" data-target="29">0</div><span class="stat-plus">+</span>
+                    </div>
+                    <p class="stat-label">Jahre Erfahrung</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Glass Results Section -->
+    <section class="results-glass" id="results">
+        <div class="glass-container">
+            <h2 class="section-title">Erfolgreiche Ergebnisse</h2>
+            <div class="glass-carousel">
+                <!-- Slide 1 -->
+                <div class="glass-slide active">
+                    <div class="glass-card" onclick="window.location.href='ergebnisse.html'" style="cursor: pointer;">
+                        <div class="glass-img-wrapper">
+                            <img src="../aesthemeet_images/sac-ekim002.jpg" alt="Nachher">
+                        </div>
+                        <div class="glass-info">
+                            <h3>Fallzusammenfassung 01 - Saphir FUE (4200 Grafts)</h3>
+                            <p>Maximale Graft-Arbeit in einer einzigen Sitzung bei starkem Haarausfall im vorderen
+                                Haaransatz und Scheitelbereich. Der gleiche Austrittswinkel wie das vorhandene Haar
+                                wurde erreicht.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 2 -->
+                <div class="glass-slide">
+                    <div class="glass-card" onclick="window.location.href='ergebnisse.html'" style="cursor: pointer;">
+                        <div class="glass-img-wrapper">
+                            <img src="../aesthemeet_images/team-1.jpg" alt="Nachher">
+                        </div>
+                        <div class="glass-info">
+                            <h3>Fallzusammenfassung 02 - FUE-Technik (3500 Grafts)</h3>
+                            <p>Spezielle Verdichtungsarbeit nur für den Rückgang im vorderen Bereich.
+                                Eine ästhetische Haarlinie wurde passend zu den Gesichtszügen des Patienten gestaltet.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 3 -->
+                <div class="glass-slide">
+                    <div class="glass-card" onclick="window.location.href='ergebnisse.html'" style="cursor: pointer;">
+                        <div class="glass-img-wrapper">
+                            <img src="../aesthemeet_images/who-we-are.jpg" alt="Nachher">
+                        </div>
+                        <div class="glass-info">
+                            <h3>Fallzusammenfassung 03 - DHI-Technik (2800 Grafts)</h3>
+                            <p>Verdichtung durch Transplantation zwischen vorhandenen Haaren ohne die Notwendigkeit
+                                einer vollständigen Kopfrasur.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 4 -->
+                <div class="glass-slide">
+                    <div class="glass-card" onclick="window.location.href='ergebnisse.html'" style="cursor: pointer;">
+                        <div class="glass-img-wrapper">
+                            <img src="../aesthemeet_images/sac-ekim004.jpg" alt="Nachher">
+                        </div>
+                        <div class="glass-info">
+                            <h3>Fallzusammenfassung 04 - Barttransplantation (1500 Grafts)</h3>
+                            <p>Natürlich aussehende Bartverdichtung zur Behebung der Lücken
+                                im Wangen- und Kinnbereich.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="glass-prev"><i class="fa-solid fa-chevron-left"></i></button>
+                <button class="glass-next"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+
+            <div class="section-footer" style="text-align: center; margin-top: 50px;">
+                <a href="ergebnisse.html" class="btn btn-primary btn-large">Alle Ergebnisse Ansehen</a>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- FAQ Section -->
+    <section class="faq" id="faq">
+        <div class="container">
+            <div class="section-header">
+                <h2>Häufig Gestellte Fragen</h2>
+                <p>Alles, was Sie über Haartransplantation wissen möchten</p>
+            </div>
+
+            <div class="faq-layout">
+                <div class="faq-image slide-in-left">
+                    <img src="../aesthemeet_images/services-1.webp" alt="Fachärztliche Beratung">
+                </div>
+
+                <div class="faq-accordion">
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h4>Ist die Haartransplantation dauerhaft?</h4>
+                            <span class="faq-toggle">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Ja, die Haartransplantation ist dauerhaft. Die aus dem Spenderbereich entnommenen Haare
+                                sind genetisch dauerhaft und bleiben ein Leben lang bestehen.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h4>Wie lange dauert es, bis die Haare wachsen?</h4>
+                            <span class="faq-toggle">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Die transplantierten Haare fallen nach 3-4 Wochen aus und beginnen nach 3 Monaten wieder
+                                zu wachsen. Das Wachstum setzt sich bis zu 6 Monate fort. Nach 12 Monaten ist das
+                                endgültige Ergebnis sichtbar.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h4>Gibt es Schmerzen?</h4>
+                            <span class="faq-toggle">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Da eine Lokalanästhesie angewendet wird, werden während des Eingriffs keine Schmerzen
+                                empfunden. Ein leichtes Unbehagen kann auftreten, aber es gibt keine Schmerzen.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h4>Nach wie vielen Tagen kann ich wieder arbeiten?</h4>
+                            <span class="faq-toggle">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Sie können nach 3-4 Tagen leichte Arbeit wieder aufnehmen. Schwere körperliche
+                                Aktivitäten können nach 2-3 Wochen wieder begonnen werden.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h4>Gibt es Kontraindikationen?</h4>
+                            <span class="faq-toggle">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Der Patient muss über einen ausreichenden Spenderbereich verfügen und sich in einem guten
+                                allgemeinen Gesundheitszustand befinden. Eine detaillierte Bewertung erfolgt während
+                                der Beratung.</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials">
+        <div class="container">
+            <div class="section-header">
+                <h2>Patientenbewertungen</h2>
+                <p>Echte Erfahrungen unserer Patienten</p>
+            </div>
+
+            <div class="testimonials-wrapper">
+                <div class="testimonials-prev"><i class="fa-solid fa-chevron-left"></i></div>
+                <div class="testimonials-slider">
+                    <div class="testimonial-card">
+                        <div class="testimonial-header">
+                            <img src="../aesthemeet_images/team-1.jpg" alt="Ahmet K." class="author-img">
+                            <div class="testimonial-header-info">
+                                <div class="testimonial-author">
+                                    <strong>Ahmet K.</strong>
+                                    <span>Istanbul</span>
+                                </div>
+                                <div class="stars">
+                                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                        class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                        class="fa-solid fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="testimonial-text">"Ich war vor der Operation sehr besorgt, aber das Team war sehr
+                            professionell. Das Ergebnis ist besser als erwartet. Ich habe es allen meinen Freunden
+                            empfohlen."</p>
+                    </div>
+
+                    <div class="testimonial-card">
+                        <div class="testimonial-header">
+                            <img src="../aesthemeet_images/team-2.jpg" alt="Müller H." class="author-img">
+                            <div class="testimonial-header-info">
+                                <div class="testimonial-author">
+                                    <strong>Müller H.</strong>
+                                    <span>Berlin</span>
+                                </div>
+                                <div class="stars">
+                                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                        class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                        class="fa-solid fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="testimonial-text">"Es sieht sehr natürlich aus. Niemand merkt, dass es eine
+                            Haartransplantation ist. Vom Preis-Leistungs-Verhältnis war es eine sehr gute Wahl."</p>
+                    </div>
+
+                    <div class="testimonial-card">
+                        <div class="testimonial-header">
+                            <img src="../aesthemeet_images/team-3.jpg" alt="Sara M." class="author-img">
+                            <div class="testimonial-header-info">
+                                <div class="testimonial-author">
+                                    <strong>Sara M.</strong>
+                                    <span>Madrid</span>
+                                </div>
+                                <div class="stars">
+                                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                        class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                        class="fa-solid fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="testimonial-text">"Von der Beratung bis zur Operation hatte ich in jeder Phase eine
+                            ausgezeichnete Erfahrung. Mein Selbstvertrauen ist vollständig zurückgekehrt."</p>
+                    </div>
+
+                    <div class="testimonial-card">
+                        <div class="testimonial-header">
+                            <img src="../aesthemeet_images/team-1.jpg" alt="David L." class="author-img">
+                            <div class="testimonial-header-info">
+                                <div class="testimonial-author">
+                                    <strong>David L.</strong>
+                                    <span>London</span>
+                                </div>
+                                <div class="stars">
+                                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                        class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                        class="fa-solid fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="testimonial-text">"Die Klinik war sehr sauber, ich fühlte mich während des gesamten
+                            Prozesses nie allein. Die Ärzte waren sehr warmherzig und vertrauenswürdig."</p>
+                    </div>
+
+                    <div class="testimonial-card">
+                        <div class="testimonial-header">
+                            <img src="../aesthemeet_images/team-2.jpg" alt="Murat T." class="author-img">
+                            <div class="testimonial-header-info">
+                                <div class="testimonial-author">
+                                    <strong>Murat T.</strong>
+                                    <span>Izmir</span>
+                                </div>
+                                <div class="stars">
+                                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                        class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                        class="fa-solid fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="testimonial-text">"Anfangs hatte ich Bedenken, aber die Ergebnisse haben sich
+                            absolut gelohnt. Am meisten hat mich die Aufmerksamkeit des Teams beeindruckt."</p>
+                    </div>
+
+                    <div class="testimonial-card">
+                        <div class="testimonial-header">
+                            <img src="../aesthemeet_images/team-3.jpg" alt="Stefan G." class="author-img">
+                            <div class="testimonial-header-info">
+                                <div class="testimonial-author">
+                                    <strong>Stefan G.</strong>
+                                    <span>München</span>
+                                </div>
+                                <div class="stars">
+                                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                        class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                        class="fa-solid fa-star-half-stroke"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="testimonial-text">"Der Heilungsprozess verlief viel schneller als erwartet.
+                            Das Pflegeset, das sie nach der Operation bereitstellten, war ausgezeichnet."</p>
+                    </div>
+
+                    <div class="testimonial-card">
+                        <div class="testimonial-header">
+                            <img src="../aesthemeet_images/team-1.jpg" alt="Caner K." class="author-img">
+                            <div class="testimonial-header-info">
+                                <div class="testimonial-author">
+                                    <strong>Caner K.</strong>
+                                    <span>Ankara</span>
+                                </div>
+                                <div class="stars">
+                                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                        class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                        class="fa-solid fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="testimonial-text">"Ich kam auf Empfehlung eines Freundes und bin definitiv nicht
+                            enttäuscht. Sie sind wirklich Experten auf ihrem Gebiet."</p>
+                    </div>
+
+                    <div class="testimonial-card">
+                        <div class="testimonial-header">
+                            <img src="../aesthemeet_images/team-2.jpg" alt="Jean P." class="author-img">
+                            <div class="testimonial-header-info">
+                                <div class="testimonial-author">
+                                    <strong>Jean P.</strong>
+                                    <span>Paris</span>
+                                </div>
+                                <div class="stars">
+                                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                        class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                        class="fa-solid fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="testimonial-text">"Hoteltransfer, Unterkunft und Klinikprozesse waren einwandfrei
+                            organisiert. Vielen Dank Aesthemeet!"</p>
+                    </div>
+                </div>
+                <div class="testimonials-next"><i class="fa-solid fa-chevron-right"></i></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Final Section -->
+    <section class="contact-final-section" id="contact">
+        <div class="container cfs-layout">
+
+            <!-- Left: Contact Info -->
+            <div class="cfs-left">
+                <h2>Kontaktieren Sie Uns</h2>
+                <p>Für Ihre Fragen oder Ihr Feedback
+                    können Sie uns gerne erreichen...</p>
+
+                <div class="cfs-info-group">
+                    <div class="cfs-info-item">
+                        <div class="cfs-icon"><i class="fa-solid fa-phone-volume"></i></div>
+                        <div class="cfs-text">
+                            <h4>Telefon:</h4>
+                            <p>+90 (212) 555-0123</p>
+                        </div>
+                    </div>
+                    <div class="cfs-info-item">
+                        <div class="cfs-icon"><i class="fa-solid fa-envelope-open-text"></i></div>
+                        <div class="cfs-text">
+                            <h4>E-Mail-Adresse:</h4>
+                            <p>info@aesthemeet.com</p>
+                        </div>
+                    </div>
+                    <div class="cfs-info-item">
+                        <div class="cfs-icon"><i class="fa-solid fa-map-location-dot"></i></div>
+                        <div class="cfs-text">
+                            <h4>Standort:</h4>
+                            <p>Istanbul, Türkei</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cfs-copyright">
+                    <p>&copy; 2024 Aesthemeet. Alle Rechte vorbehalten.</p>
+                </div>
+            </div>
+
+            <!-- Right: Form Card -->
+            <div class="cfs-right">
+                <div class="cfs-form-card">
+                    <h3>Wir sind hier, um Ihnen zu helfen!</h3>
+                    <form id="consultationForm" action="https://formspree.io/f/maqgalpq" method="POST">
+                        <div class="cfs-form-row">
+                            <input type="text" placeholder="Vollständiger Name" required>
+                            <input type="email" placeholder="E-Mail-Adresse" required>
+                        </div>
+                        <input type="tel" class="phone-input" required>
+                        <textarea placeholder="Ihre Nachricht" rows="5" required></textarea>
+
+                        <button type="submit" class="btn-submit-icon">
+                            NACHRICHT SENDEN
+                            <span class="icon-circle"><i class="fa-solid fa-arrow-right"></i></span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.2.1/js/intlTelInput.min.js"></script>
+    <script src="../script.js?v=46"></script>
+
+    <!-- WhatsApp Floating Button -->
+    <a href="https://wa.me/905555555555?text=Hallo,%20ich%20moechte%20Informationen%20erhalten." class="whatsapp-float"
+        target="_blank" rel="noopener noreferrer">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
+</body>
+
+</html>

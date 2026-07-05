@@ -592,6 +592,7 @@ section:not(.hero) {
     0% {
         opacity: 0;
     }
+
     100% {
         opacity: 1;
     }
@@ -610,7 +611,7 @@ section:not(.hero) {
     align-items: center;
     box-shadow: 0 10px 30px rgba(26, 95, 122, 0.2);
     transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .stat-item:hover {
@@ -1522,6 +1523,10 @@ section:not(.hero) {
         grid-template-columns: 1fr;
     }
 
+    .cfs-form-row {
+        grid-template-columns: 1fr;
+    }
+
     .features-grid {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -1836,13 +1841,14 @@ body.dark-mode .footer {
 }
 
 @keyframes slideInDynamic {
-    0% { 
-        opacity: 0; 
-        transform: translateX(30px) scale(0.98); 
+    0% {
+        opacity: 0;
+        transform: translateX(30px) scale(0.98);
     }
-    100% { 
-        opacity: 1; 
-        transform: translateX(0) scale(1); 
+
+    100% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
     }
 }
 
@@ -1881,7 +1887,7 @@ body.dark-mode .footer {
     margin-top: 6px;
 }
 
-.svc-slide-content > p {
+.svc-slide-content>p {
     color: var(--text-light);
     line-height: 1.7;
     margin-bottom: 20px;
@@ -1989,8 +1995,13 @@ body.dark-mode .footer {
     z-index: 10;
 }
 
-.svc-prev { left: -23px; }
-.svc-next { right: -23px; }
+.svc-prev {
+    left: -23px;
+}
+
+.svc-next {
+    right: -23px;
+}
 
 .svc-prev:hover,
 .svc-next:hover {
@@ -2129,14 +2140,16 @@ body.dark-mode .footer {
     right: -10px;
     font-size: 80px;
     font-weight: 800;
-    color: rgba(26, 95, 122, 0.12); /* Increased opacity for better visibility */
+    color: rgba(26, 95, 122, 0.12);
+    /* Increased opacity for better visibility */
     line-height: 1;
     z-index: 0;
     transition: color 0.4s ease;
 }
 
 .process-card:hover .process-step {
-    color: rgba(26, 95, 122, 0.25); /* More visible on hover */
+    color: rgba(26, 95, 122, 0.25);
+    /* More visible on hover */
 }
 
 .process-icon {
@@ -2258,199 +2271,182 @@ body.dark-mode .footer {
     background-color: #000;
 }
 
-/* ========== RESULTS PAGE (SONUÇLAR) ========== */
-.results-hero-section {
-    min-height: 60vh;
+/* ========== RESULTS PAGE (SONUÇLAR) - MARQUEE ========== */
+.marquee-section {
+    min-height: 100vh;
     display: flex;
-    align-items: center;
-    padding: 120px 0 60px;
+    flex-direction: column;
+    justify-content: center;
+    padding: 100px 0 40px;
     position: relative;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     background-attachment: fixed;
-}
-
-.results-hero-content {
-    animation: fadeInUp 1s ease-out;
-    color: white;
-}
-
-.results-hero-content h1,
-.results-hero-content p {
-    color: white;
-}
-
-/* Portfolio Gallery */
-.portfolio-section {
-    padding: 100px 0;
-    background: var(--bg-white);
-}
-
-.portfolio-filters {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 15px;
-    margin-bottom: 50px;
-}
-
-.filter-btn {
-    padding: 12px 25px;
-    border: 1px solid rgba(26, 95, 122, 0.15);
-    background: transparent;
-    color: var(--primary-color);
-    border-radius: 40px;
-    font-size: 15px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.filter-btn:hover, .filter-btn.active {
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
-    color: white;
-    box-shadow: 0 5px 15px rgba(26, 95, 122, 0.2);
-    border-color: transparent;
-}
-
-.portfolio-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 30px;
-}
-
-.portfolio-item {
-    transition: all 0.4s ease;
-}
-
-.portfolio-item.hide {
-    display: none;
-}
-
-.portfolio-card {
-    border-radius: 20px;
-    overflow: hidden;
-    background: white;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    transition: transform 0.4s ease, box-shadow 0.4s ease;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
-.portfolio-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-}
-
-.portfolio-img {
-    position: relative;
-    width: 100%;
-    height: 350px;
     overflow: hidden;
 }
 
-.portfolio-img img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.6s ease;
-}
-
-.portfolio-card:hover .portfolio-img img {
-    transform: scale(1.05);
-}
-
-.portfolio-overlay {
+.marquee-blur-overlay {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(26, 95, 122, 0.85);
+    background: rgba(0, 0, 0, 0.45);
+    /* Dark enough for white text to read clearly */
+    backdrop-filter: blur(8px);
+    /* Blur the background image, but not too much */
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1;
+}
+
+.marquee-header {
+    margin-bottom: 40px;
+    padding: 0 20px;
+}
+
+.marquee-title {
+    font-size: 42px;
+    color: var(--primary-color);
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.marquee-subtitle {
+    font-size: 18px;
+    color: var(--text-light);
+}
+
+.marquee-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    padding: 20px 0;
+    /* Use mask-image for a seamless fade over any background */
+    -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
+.marquee-fade {
+    display: none;
+}
+
+.marquee-track {
+    display: flex;
+    gap: 30px;
+    width: max-content;
+    animation: scroll-marquee 40s linear infinite;
+}
+
+.marquee-track:hover {
+    animation-play-state: paused;
+}
+
+/* Duplicated items to make the animation continuous */
+@keyframes scroll-marquee {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+
+    /* Scrolls exactly half of the duplicated content */
+}
+
+.marquee-item {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.4s ease;
-    color: white;
+    gap: 15px;
+    width: 320px;
+    flex-shrink: 0;
+    background: white;
+    padding: 15px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease;
 }
 
-.portfolio-card:hover .portfolio-overlay {
-    opacity: 1;
+.marquee-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
 }
 
-.portfolio-overlay .overlay-text {
-    font-size: 18px;
-    font-weight: 500;
-    margin-bottom: 10px;
-    transform: translateY(20px);
+.mq-img-wrapper {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.mq-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     transition: transform 0.4s ease;
 }
 
-.portfolio-overlay i {
-    font-size: 24px;
-    background: white;
-    color: var(--primary-color);
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transform: translateY(20px);
-    transition: transform 0.4s ease 0.1s;
+.marquee-item:hover .mq-img-wrapper img {
+    transform: scale(1.05);
 }
 
-.portfolio-card:hover .portfolio-overlay .overlay-text,
-.portfolio-card:hover .portfolio-overlay i {
-    transform: translateY(0);
-}
-
-.portfolio-info {
-    padding: 25px;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-.portfolio-tags {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
-}
-
-.portfolio-tags .tag {
-    background: rgba(26, 95, 122, 0.1);
-    color: var(--primary-color);
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 13px;
+.mq-badge {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
     font-weight: 600;
+    backdrop-filter: blur(4px);
+    z-index: 2;
 }
 
-.portfolio-tags .tag-light {
-    background: rgba(56, 189, 248, 0.1);
-    color: var(--accent-color);
-}
-
-.portfolio-info h3 {
-    font-size: 20px;
+.mq-badge-after {
+    background: rgba(255, 255, 255, 0.9);
     color: var(--primary-color);
-    margin-bottom: 10px;
 }
 
-.portfolio-info p {
+.mq-info {
+    text-align: center;
+    padding: 10px 0 5px;
+}
+
+.mq-info h4 {
+    color: var(--primary-color);
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+
+.mq-info span {
     color: var(--text-light);
-    font-size: 15px;
-    line-height: 1.6;
-    margin: 0;
+    font-size: 13px;
+    font-weight: 500;
 }
 
-/* Video Testimonials */
+@media (max-width: 768px) {
+    .marquee-section {
+        padding: 100px 0 40px;
+    }
+
+    .marquee-title {
+        font-size: 32px;
+    }
+
+    .marquee-item {
+        width: 280px;
+    }
+
+    .mq-img-wrapper {
+        height: 190px;
+    }
+}
+
+/* ========== VIDEO TESTIMONIALS ========== */
 .video-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -2503,7 +2499,8 @@ body.dark-mode .footer {
     justify-content: center;
     color: var(--primary-color);
     font-size: 24px;
-    padding-left: 5px; /* Visual center adjustment for play icon */
+    padding-left: 5px;
+    /* Visual center adjustment for play icon */
     z-index: 1;
     transition: transform 0.3s ease;
 }
@@ -2558,22 +2555,16 @@ body.dark-mode .footer {
         transform: scale(0.9);
         opacity: 1;
     }
+
     100% {
         transform: scale(1.2);
         opacity: 0;
     }
 }
 
-/* ========== ANIMATIONS ========== */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
+@media (max-width: 992px) {
+    .video-grid {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -2593,8 +2584,13 @@ body.dark-mode .footer {
         grid-template-columns: 1fr;
     }
 
-    .svc-prev { left: 8px; }
-    .svc-next { right: 8px; }
+    .svc-prev {
+        left: 8px;
+    }
+
+    .svc-next {
+        right: 8px;
+    }
 
     .footer-content {
         grid-template-columns: repeat(2, 1fr);
@@ -2641,4 +2637,100 @@ body.dark-mode .footer {
         grid-template-columns: 1fr;
     }
 }
-
+
+/* ========== WHATSAPP FLOATING BUTTON ========== */
+.whatsapp-float {
+    position: fixed;
+    width: 60px;
+    height: 60px;
+    bottom: 40px;
+    right: 40px;
+    background-color: #25d366;
+    color: #FFF;
+    border-radius: 50px;
+    text-align: center;
+    font-size: 30px;
+    box-shadow: 2px 2px 15px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.whatsapp-float:hover {
+    background-color: #128C7E;
+    color: #FFF;
+    transform: scale(1.1);
+    box-shadow: 2px 2px 20px rgba(37, 211, 102, 0.4);
+}
+
+.whatsapp-float i {
+    margin-top: 2px;
+}
+
+@media (max-width: 768px) {
+    .whatsapp-float {
+        width: 50px;
+        height: 50px;
+        bottom: 20px;
+        right: 20px;
+        font-size: 26px;
+    }
+}
+
+/* ========== INTL-TEL-INPUT OVERRIDES ========== */
+.iti {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.iti__flag-container {
+    padding-left: 10px;
+}
+
+.cfs-form-card .iti input[type="tel"] {
+    width: 100%;
+    margin-bottom: 0;
+    padding-left: 55px; /* space for flag */
+}
+
+/* Fix dropdown colors and layout */
+.iti__country-list {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    white-space: nowrap;
+}
+
+.iti__country-name {
+    color: #1e293b !important;
+}
+
+.iti__dial-code {
+    color: #64748b !important;
+}
+
+.iti__country.iti__highlight {
+    background-color: #f1f5f9;
+}
+
+/* Dark mode fixes for dropdown */
+body.dark-mode .iti__country-list {
+    background-color: #1e293b;
+    border-color: #334155;
+}
+
+body.dark-mode .iti__country-name {
+    color: #f8fafc !important;
+}
+
+body.dark-mode .iti__dial-code {
+    color: #cbd5e1 !important;
+}
+
+body.dark-mode .iti__country.iti__highlight {
+    background-color: #334155;
+}
