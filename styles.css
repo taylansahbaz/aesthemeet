@@ -538,6 +538,7 @@ section:not(.hero) {
 .features-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: 1fr;
     gap: 30px;
 }
 
@@ -602,7 +603,7 @@ section:not(.hero) {
 .stat-item {
     background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
     border-radius: 16px;
-    padding: 30px 20px;
+    padding: 20px 15px;
     text-align: center;
     color: white;
     display: flex;
