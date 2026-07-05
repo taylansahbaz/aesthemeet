@@ -18,15 +18,15 @@
                 sessionStorage.setItem('aesthemeet_redirected', 'true');
 
                 if (lang.startsWith('de')) {
-                    window.location.replace('de/index.html');
+                    window.location.replace('de/');
                 } else if (lang.startsWith('en')) {
-                    window.location.replace('en/index.html');
+                    window.location.replace('en/');
                 } else {
-                    window.location.replace('tr/index.html');
+                    window.location.replace('tr/');
                 }
             } else {
                 // Default redirect to TR if revisiting root
-                window.location.replace('tr/index.html');
+                window.location.replace('tr/');
             }
         })();
     </script>
