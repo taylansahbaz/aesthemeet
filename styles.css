@@ -49,9 +49,12 @@ body {
 
 /* ========== UTILITIES ========== */
 .container {
+    width: 100%;
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 20px;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 .btn {
@@ -1779,9 +1782,9 @@ svg {
     }
 
     .hero {
-        height: 70dvh;
+        height: 100vh;
+        height: 100dvh;
         min-height: 460px;
-        max-height: 620px;
     }
 
     .carousel-content h1 {
