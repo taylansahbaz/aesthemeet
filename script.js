@@ -84,17 +84,40 @@ themeToggle.addEventListener('click', () => {
 const menuToggle = document.getElementById('menuToggle');
 const navbar = document.querySelector('.navbar');
 
+function closeMobileMenu() {
+    navbar.classList.remove('nav-open');
+    menuToggle.classList.remove('active');
+    menuToggle.textContent = '☰';
+}
+
+function openMobileMenu() {
+    navbar.classList.add('nav-open');
+    menuToggle.classList.add('active');
+    menuToggle.textContent = '✕';
+}
+
 menuToggle.addEventListener('click', () => {
-    navbar.style.display = navbar.style.display === 'flex' ? 'none' : 'flex';
+    if (navbar.classList.contains('nav-open')) {
+        closeMobileMenu();
+    } else {
+        openMobileMenu();
+    }
 });
 
 // Close menu when a link is clicked
 document.querySelectorAll('.nav-links a').forEach(link => {
     link.addEventListener('click', () => {
         if (window.innerWidth <= 768) {
-            navbar.style.display = 'none';
+            closeMobileMenu();
         }
     });
+});
+
+// Close menu on resize back to desktop width
+window.addEventListener('resize', () => {
+    if (window.innerWidth > 768) {
+        closeMobileMenu();
+    }
 });
 
 // ========== FAQ ACCORDION ==========
