@@ -1696,16 +1696,7 @@ svg {
     }
 
     .carousel-btn {
-        padding: 10px 15px;
-        font-size: 18px;
-    }
-
-    .carousel-btn.prev {
-        left: 10px;
-    }
-
-    .carousel-btn.next {
-        right: 10px;
+        display: none;
     }
 
     .section-header h2 {
@@ -1788,8 +1779,9 @@ svg {
     }
 
     .hero {
+        height: 70dvh;
         min-height: 460px;
-        height: auto;
+        max-height: 620px;
     }
 
     .carousel-content h1 {
