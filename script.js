@@ -54,8 +54,21 @@ if (totalSlides > 0) {
     setInterval(nextSlide, 6000);
 }
 
-// ========== SCROLL EVENT REMOVED ==========
-// The sticky header logic was removed as requested.
+// ========== STICKY HEADER ==========
+const siteHeader = document.querySelector('.header');
+
+function updateHeaderScrolledState() {
+    if (window.scrollY > 40) {
+        siteHeader.classList.add('scrolled');
+    } else {
+        siteHeader.classList.remove('scrolled');
+    }
+}
+
+if (siteHeader) {
+    updateHeaderScrolledState();
+    window.addEventListener('scroll', updateHeaderScrolledState, { passive: true });
+}
 
 // ========== THEME TOGGLE ==========
 const themeToggle = document.getElementById('themeToggle');

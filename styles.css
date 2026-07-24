@@ -35,6 +35,7 @@ body.dark-mode {
 html {
     scroll-behavior: smooth;
     scroll-snap-type: y mandatory;
+    scroll-padding-top: 100px;
 }
 
 body {
@@ -120,7 +121,7 @@ body {
 /* ========== HEADER & NAVIGATION ========== */
 .header {
     background-color: transparent;
-    position: absolute;
+    position: fixed;
     width: 100%;
     top: 0;
     z-index: 1000;
@@ -862,8 +863,9 @@ section:not(.hero) {
     }
 
     .glass-img-wrapper {
+        flex: none;
         width: 100%;
-        height: 260px;
+        height: 340px;
     }
 
     .glass-info {
@@ -899,7 +901,8 @@ section:not(.hero) {
 
 @media (max-width: 480px) {
     .glass-img-wrapper {
-        height: 220px;
+        flex: none;
+        height: 300px;
     }
 }
 
@@ -1580,6 +1583,10 @@ svg {
 }
 
 @media (max-width: 768px) {
+    html {
+        scroll-padding-top: 70px;
+    }
+
     .header-content {
         justify-content: space-between;
         padding: 16px 16px 0;
@@ -1944,7 +1951,7 @@ body.dark-mode .footer {
 /* ========== INNER PAGE SPECIFIC STYLES ========== */
 .inner-page .header {
     background-color: transparent;
-    position: absolute;
+    position: fixed;
     top: 0;
     width: 100%;
 }
@@ -2655,11 +2662,21 @@ body.dark-mode .footer {
     }
 
     .marquee-item {
-        width: 280px;
+        width: 300px;
     }
 
     .mq-img-wrapper {
-        height: 190px;
+        height: 280px;
+    }
+}
+
+@media (max-width: 480px) {
+    .marquee-item {
+        width: 82vw;
+    }
+
+    .mq-img-wrapper {
+        height: 320px;
     }
 }
 
@@ -2788,13 +2805,34 @@ body.dark-mode .footer {
 /* ========== RESPONSIVE: INNER PAGES ========== */
 @media (max-width: 992px) {
 
+    .services-carousel-section {
+        padding: 90px 0 30px;
+    }
+
+    .svc-dots {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        justify-content: flex-start;
+        margin-bottom: 20px;
+        padding-bottom: 4px;
+        scrollbar-width: none;
+    }
+
+    .svc-dots::-webkit-scrollbar {
+        display: none;
+    }
+
+    .svc-dot {
+        flex-shrink: 0;
+    }
+
     .svc-slide {
         flex-direction: column;
-        gap: 30px;
+        gap: 20px;
     }
 
     .svc-slide-img img {
-        height: 280px;
+        height: 200px;
     }
 
     .svc-features {
