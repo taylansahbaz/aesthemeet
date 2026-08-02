@@ -34,8 +34,31 @@ body.dark-mode {
 
 html {
     scroll-behavior: smooth;
-    scroll-snap-type: y mandatory;
-    scroll-padding-top: 100px;
+    scroll-padding-top: 90px;
+}
+
+/* Full-viewport section snapping is a desktop-only presentation. On phones and
+   tablets every section is far taller than the viewport, so mandatory snapping
+   fights the user and hides everything below each section's fold. */
+@media (min-width: 1025px) {
+    html {
+        scroll-snap-type: y mandatory;
+        scroll-padding-top: 100px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }
 
 body {
@@ -294,8 +317,6 @@ body {
     height: 100dvh;
     min-height: 600px;
     overflow: hidden;
-    scroll-snap-align: start;
-    scroll-snap-stop: always;
 }
 
 .carousel-container {
@@ -448,13 +469,24 @@ body {
 
 /* ========== SECTIONS COMMON ========== */
 section:not(.hero) {
-    min-height: 100vh;
-    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    scroll-snap-align: start;
-    scroll-snap-stop: always;
+}
+
+/* One-section-per-screen + snapping: desktop only (see the html rule above). */
+@media (min-width: 1025px) {
+
+    .hero,
+    section:not(.hero) {
+        scroll-snap-align: start;
+        scroll-snap-stop: always;
+    }
+
+    section:not(.hero) {
+        min-height: 100vh;
+        min-height: 100dvh;
+    }
 }
 
 /* ========== SERVICES SECTION ========== */
@@ -988,7 +1020,8 @@ section:not(.hero) {
     overflow: hidden;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
     height: 460px;
-    width: 600px;
+    width: 100%;
+    max-width: 600px;
 }
 
 .faq-image img {
@@ -1649,60 +1682,6 @@ svg {
     .btn {
         padding: 12px 24px;
         font-size: 15px;
-    }
-
-    .navbar {
-        display: none;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        background: rgba(13, 33, 46, 0.98);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        flex-direction: column;
-        padding: 10px 0 20px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        z-index: 999;
-    }
-
-    .navbar.nav-open {
-        display: flex;
-    }
-
-    .nav-links {
-        flex-direction: column;
-        width: 100%;
-        gap: 4px;
-        align-items: center;
-    }
-
-    .nav-links a {
-        display: block;
-        width: 100%;
-        padding: 14px 20px;
-        text-align: center;
-        font-size: 15px;
-    }
-
-    .nav-links a::after {
-        display: none;
-    }
-
-    .menu-toggle {
-        display: block;
-    }
-
-    .menu-toggle.active {
-        transform: scale(1.1);
-    }
-
-    .carousel-content h1 {
-        font-size: 32px;
-    }
-
-    .carousel-content p {
-        font-size: 16px;
     }
 
     .carousel-btn {
@@ -2529,16 +2508,27 @@ body.dark-mode .footer {
     padding: 0 20px;
 }
 
+/* The marquee sits on a dark blurred photo overlay, so its type is always light. */
 .marquee-title {
-    font-size: 42px;
-    color: var(--primary-color);
+    font-size: clamp(26px, 2.6vw + 16px, 42px);
+    color: #fff;
     margin-bottom: 10px;
     font-weight: 700;
+    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.45);
 }
 
 .marquee-subtitle {
-    font-size: 18px;
-    color: var(--text-light);
+    font-size: clamp(15px, 3.6vw, 18px);
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* Utility classes used by the results pages */
+.text-center {
+    text-align: center;
+}
+
+.text-white {
+    color: #fff;
 }
 
 .marquee-container {
@@ -2655,10 +2645,9 @@ body.dark-mode .footer {
 @media (max-width: 768px) {
     .marquee-section {
         padding: 100px 0 40px;
-    }
-
-    .marquee-title {
-        font-size: 32px;
+        /* iOS Safari cannot composite a fixed background: it zooms the image
+           and judders on every scroll frame. */
+        background-attachment: scroll;
     }
 
     .marquee-item {
@@ -2839,6 +2828,14 @@ body.dark-mode .footer {
         grid-template-columns: 1fr;
     }
 
+    /* The slide stacks (image over text) at this width, so a vertically centred
+       arrow lands in the middle of the paragraph and covers it. Pin them to the
+       middle of the 200px image instead. */
+    .svc-prev,
+    .svc-next {
+        top: 100px;
+    }
+
     .svc-prev {
         left: 8px;
     }
@@ -2938,11 +2935,569 @@ body.dark-mode .footer {
 /* ========== INTL-TEL-INPUT OVERRIDES ========== */
 .iti {
     width: 100%;
-    margin-bottom: 20px;
+    /* The form is a flex column with its own gap; an extra margin here made the
+       spacing under the phone field twice as large as every other field. */
+    margin-bottom: 0;
 }
 
 .iti__flag-container {
     padding-left: 10px;
+}
+
+/* The country dropdown is rendered inside the card, which clips it. */
+.iti__country-list {
+    max-width: min(320px, calc(100vw - 48px));
+    max-height: 240px;
+}
+
+.iti__country {
+    padding: 10px 10px;
+}
+
+
+/* ==========================================================================
+   MOBILE & TABLET
+   Everything below 1025px runs as a normal scrolling document: no snapping,
+   no forced 100vh sections, and real vertical rhythm instead.
+   ========================================================================== */
+
+/* The testimonial arrows hang 22.5px outside their wrapper. That only clears
+   the viewport once the page is wider than the 1200px container plus both
+   arrows — below that they were being sliced off by the body's overflow clip
+   (worst on tablets, where they landed at x = -6px). */
+@media (max-width: 1264px) {
+
+    .testimonials-prev {
+        left: 4px;
+    }
+
+    .testimonials-next {
+        right: 4px;
+    }
+}
+
+
+@media (max-width: 1024px) {
+
+    /* --- Sections flow naturally and get real breathing room --- */
+    .services,
+    .why-us,
+    .faq,
+    .testimonials,
+    .process {
+        padding: 56px 0;
+    }
+
+    .results-glass {
+        padding: 48px 0;
+    }
+
+    .contact-final-section,
+    .services-carousel-section,
+    .marquee-section {
+        min-height: 0;
+        align-items: stretch;
+    }
+
+    .contact-final-section {
+        padding: 56px 0;
+    }
+
+    .services-carousel-section {
+        padding: 100px 0 56px;
+        background-attachment: scroll;
+    }
+
+    .marquee-section {
+        padding: 100px 0 56px;
+        justify-content: flex-start;
+        background-attachment: scroll;
+    }
+
+    .section-header {
+        margin-bottom: 32px;
+    }
+
+    /* --- Grids that were still 4/5 columns on a tablet --- */
+    .services-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .process-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .faq-image {
+        height: 360px;
+    }
+}
+
+
+/* --- Mobile navigation -----------------------------------------------------
+   Collapses at 900px, not 768px: at tablet widths the six-item horizontal nav
+   was squeezing into ~19px-tall links next to a 240px logo. */
+@media (max-width: 900px) {
+
+    /* `.container { padding: 0 16px }` is declared after `.header-content` and
+       silently wiped its padding, so the bar sat flush against the top edge.
+       Re-assert it with higher specificity. */
+    .header .header-content {
+        padding: 14px 16px;
+        gap: 10px;
+    }
+
+    /* Give the bar a solid backdrop while the dropdown is open, otherwise the
+       logo floats on top of the hero photo with the panel hanging below it. */
+    .header.nav-active {
+        background-color: rgba(13, 33, 46, 0.98);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+    }
+
+    .header-actions {
+        gap: 10px;
+        flex-shrink: 0;
+    }
+
+    .navbar {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: rgba(13, 33, 46, 0.98);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        flex-direction: column;
+        padding: 10px 0 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        z-index: 999;
+        /* Must scroll on short screens instead of running off the bottom. */
+        max-height: calc(100dvh - 80px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+    }
+
+    .navbar.nav-open {
+        display: flex;
+    }
+
+    .nav-links {
+        flex-direction: column;
+        width: 100%;
+        gap: 4px;
+        align-items: center;
+    }
+
+    .nav-links a {
+        display: block;
+        width: 100%;
+        padding: 15px 20px;
+        text-align: center;
+        font-size: 15px;
+    }
+
+    .nav-links a::after {
+        display: none;
+    }
+
+    /* 20px of glyph is not a tap target. */
+    .menu-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        font-size: 24px;
+        line-height: 1;
+        margin-right: -8px;
+    }
+
+    .menu-toggle.active {
+        transform: scale(1.1);
+    }
+
+    .language-selector {
+        gap: 4px;
+        font-size: 13px;
+    }
+
+    .language-selector a {
+        padding: 9px 7px;
+    }
+
+    /* Dots are 8-12px of paint, which is nowhere near a thumb. Make the element
+       itself a 34px target and move the visible circle into ::before, so the
+       targets sit side by side without overlapping each other. */
+    .carousel-dots {
+        gap: 2px;
+        bottom: 18px;
+    }
+
+    .dot,
+    .dot.active {
+        width: 34px;
+        height: 34px;
+        background: transparent;
+        border-radius: 0;
+        transform: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .dot::before {
+        content: '';
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.5);
+        transition: var(--transition);
+    }
+
+    .dot.active::before {
+        background: #fff;
+        transform: scale(1.35);
+    }
+}
+
+
+@media (max-width: 768px) {
+
+    /* --- Hero ---------------------------------------------------------- */
+    .hero {
+        min-height: 520px;
+    }
+
+    .carousel-content {
+        padding: 0 24px;
+    }
+
+    /* --- Cards ---------------------------------------------------------- */
+    .services-grid {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .faq-image {
+        height: 260px;
+    }
+
+    .service-image {
+        height: 210px;
+    }
+
+    .service-info {
+        padding: 20px;
+    }
+
+    .service-info h3 {
+        font-size: 20px;
+    }
+
+    .service-info p {
+        line-height: 1.65;
+        margin-bottom: 0;
+    }
+
+    .feature-item,
+    .stat-item {
+        padding: 22px 16px;
+    }
+
+    .stat-number {
+        font-size: 40px;
+    }
+
+    .stat-plus {
+        font-size: 28px;
+    }
+
+    .stat-label {
+        font-size: 14px;
+    }
+
+    /* --- Results carousel ------------------------------------------------
+       The arrows are hidden at this width, so the card itself is swipeable
+       (see script.js) — hint that with the grab cursor and stop the browser
+       from claiming horizontal drags. */
+    .glass-carousel {
+        touch-action: pan-y;
+    }
+
+    .glass-img-wrapper {
+        height: clamp(240px, 45vh, 380px);
+    }
+
+    /* --- Results marquee -------------------------------------------------
+       These are before/after comparisons and the wrapper crops with
+       `object-fit: cover`. The fixed mobile heights made the box far squarer
+       than the desktop 320x400 frame, so the crop ate the top and bottom of
+       each photo. Lock the frame to the desktop ratio instead. */
+    .mq-img-wrapper {
+        height: auto;
+        aspect-ratio: 4 / 5;
+    }
+
+    /* --- Testimonials --------------------------------------------------- */
+    .testimonials-slider {
+        padding: 12px 0;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-x: contain;
+    }
+
+    .testimonials-prev,
+    .testimonials-next {
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(6px);
+    }
+
+    .testimonial-card {
+        padding: 24px;
+    }
+
+    /* --- FAQ ------------------------------------------------------------- */
+    .faq-item {
+        padding: 6px 0;
+    }
+
+    /* Padding lives on the row so the whole strip is tappable. */
+    .faq-question {
+        padding: 16px 0;
+        gap: 16px;
+    }
+
+    /* --- Contact --------------------------------------------------------- */
+    .cfs-layout {
+        gap: 36px;
+    }
+
+    .cfs-form-card h3 {
+        font-size: 22px;
+        margin-bottom: 24px;
+    }
+
+    .cfs-form-card form {
+        gap: 18px;
+    }
+
+    /* A left-aligned pill is a small target at the end of a long form. */
+    .btn-submit-icon {
+        align-self: stretch;
+        justify-content: center;
+        gap: 12px;
+        padding: 14px 24px;
+    }
+
+    /* --- Services page --------------------------------------------------- */
+    .glass-panel {
+        padding: 20px 16px;
+        border-radius: 16px;
+    }
+
+    .process-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        margin-top: 32px;
+    }
+
+    .technique-comparison,
+    .services-process {
+        padding: 56px 0;
+    }
+
+    /* Make it obvious the table scrolls sideways rather than looking cut off. */
+    .comparison-table-wrapper {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-x: contain;
+        -webkit-mask-image: linear-gradient(to right, #000 88%, transparent);
+        mask-image: linear-gradient(to right, #000 88%, transparent);
+    }
+
+    .consultation-cta {
+        padding: 56px 0;
+    }
+}
+
+
+/* Below this width a single testimonial fills the row, so the overlay arrows
+   sit directly on the quote and clip the first word of every line they cross.
+   The slider is natively swipeable — let the next card peek instead, which is
+   a clearer affordance than an arrow covering the text. */
+@media (max-width: 500px) {
+
+    .testimonials-slider {
+        grid-auto-columns: 86%;
+    }
+
+    .testimonials-prev,
+    .testimonials-next {
+        display: none;
+    }
+}
+
+
+@media (max-width: 480px) {
+
+    .header .header-content {
+        padding: 12px 14px;
+    }
+
+    .header-actions {
+        gap: 6px;
+    }
+
+    .language-selector {
+        font-size: 12px;
+        gap: 3px;
+    }
+
+    .services,
+    .why-us,
+    .faq,
+    .testimonials,
+    .process,
+    .contact-final-section,
+    .technique-comparison,
+    .services-process,
+    .consultation-cta {
+        padding: 44px 0;
+    }
+
+    .results-glass {
+        padding: 40px 0;
+    }
+
+    .section-header {
+        margin-bottom: 26px;
+    }
+
+    .services-carousel-section,
+    .marquee-section {
+        padding: 88px 0 44px;
+    }
+
+    /* One column at this width — a 200px-tall strip on a full-width card looks
+       like a banner, not a photo. */
+    .service-image {
+        height: 200px;
+    }
+
+    /* `grid-auto-rows: 1fr` equalises row heights, which is what you want in a
+       multi-column grid. In a single column it just pads every card out to the
+       tallest one, leaving big empty blocks inside the stat tiles. */
+    .features-grid {
+        gap: 16px;
+        grid-auto-rows: auto;
+    }
+
+    .stat-number {
+        font-size: 36px;
+    }
+
+    .glass-container {
+        padding: 0 16px;
+    }
+
+    .glass-card {
+        border-radius: 18px;
+    }
+
+    .cfs-form-card {
+        padding: 20px 16px;
+    }
+
+    .cfs-info-item {
+        gap: 14px;
+    }
+
+    .cfs-left p {
+        margin-bottom: 26px;
+    }
+
+    .marquee-item {
+        padding: 12px;
+    }
+
+    .svc-detail {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .process-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .process-step {
+        font-size: 64px;
+    }
+}
+
+
+/* Landscape phones: the viewport is only ~360px tall, so anything pinned to a
+   full viewport height leaves no room to read. */
+@media (max-height: 500px) and (orientation: landscape) {
+
+    .hero {
+        min-height: 420px;
+    }
+
+    .carousel-content h1 {
+        font-size: clamp(20px, 4vw, 30px);
+        margin-bottom: 10px;
+    }
+
+    .carousel-content p {
+        font-size: 14px;
+        margin-bottom: 16px;
+    }
+
+    .carousel-tag {
+        margin-bottom: 12px;
+    }
+
+    .navbar {
+        max-height: calc(100dvh - 64px);
+    }
+
+    .glass-img-wrapper {
+        height: 260px;
+    }
+
+    .services-carousel-section,
+    .marquee-section {
+        padding: 84px 0 40px;
+    }
+}
+
+
+/* Very narrow devices (small Androids, Galaxy Fold cover screen). */
+@media (max-width: 360px) {
+
+    .logo-img {
+        width: min(130px, 46vw);
+    }
+
+    .language-selector {
+        font-size: 11px;
+    }
+
+    .container {
+        padding: 0 12px;
+    }
+
+    .btn-large {
+        padding: 13px 20px;
+        font-size: 15px;
+    }
+
+    .svc-detail span {
+        font-size: 11px;
+    }
 }
 
 .cfs-form-card .iti input[type="tel"] {

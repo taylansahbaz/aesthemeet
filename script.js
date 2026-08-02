@@ -1,3 +1,45 @@
+// ========== TOUCH SWIPE HELPER ==========
+// Every carousel on this site hides its prev/next arrows below 768px, so on a
+// phone the only way through them was to sit and wait for autoplay. This gives
+// each one a horizontal swipe instead.
+function addSwipe(element, onLeft, onRight) {
+    if (!element) return;
+
+    const MIN_DISTANCE = 45;   // px before a drag counts as a swipe
+    const MAX_OFF_AXIS = 0.8;  // reject mostly-vertical drags (i.e. scrolling)
+    let startX = 0;
+    let startY = 0;
+    let tracking = false;
+
+    element.addEventListener('touchstart', (e) => {
+        if (e.touches.length !== 1) return;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        tracking = true;
+    }, { passive: true });
+
+    element.addEventListener('touchend', (e) => {
+        if (!tracking) return;
+        tracking = false;
+
+        const dx = e.changedTouches[0].clientX - startX;
+        const dy = e.changedTouches[0].clientY - startY;
+
+        if (Math.abs(dx) < MIN_DISTANCE) return;
+        if (Math.abs(dy) > Math.abs(dx) * MAX_OFF_AXIS) return;
+
+        if (dx < 0) {
+            onLeft();
+        } else {
+            onRight();
+        }
+    }, { passive: true });
+
+    element.addEventListener('touchcancel', () => {
+        tracking = false;
+    }, { passive: true });
+}
+
 // ========== CAROUSEL FUNCTIONALITY ==========
 let currentSlide = 0;
 const slides = document.querySelectorAll('.carousel-slide');
@@ -11,18 +53,24 @@ function initCarousel() {
     for (let i = 0; i < totalSlides; i++) {
         const dot = document.createElement('div');
         dot.className = `dot ${i === 0 ? 'active' : ''}`;
-        dot.addEventListener('click', () => goToSlide(i));
+        dot.addEventListener('click', () => {
+            goToSlide(i);
+            resetHeroAutoplay();
+        });
         dotsContainer.appendChild(dot);
     }
 }
 
 function showSlide(n) {
+    // The results and services pages have no hero carousel at all.
+    if (!slides[n]) return;
+
     slides.forEach(slide => slide.classList.remove('active'));
     const dots = document.querySelectorAll('.dot');
     dots.forEach(dot => dot.classList.remove('active'));
 
     slides[n].classList.add('active');
-    dots[n].classList.add('active');
+    if (dots[n]) dots[n].classList.add('active');
 }
 
 function goToSlide(n) {
@@ -31,13 +79,29 @@ function goToSlide(n) {
 }
 
 function nextSlide() {
+    if (totalSlides === 0) return;
     currentSlide = (currentSlide + 1) % totalSlides;
     showSlide(currentSlide);
 }
 
 function prevSlide() {
+    if (totalSlides === 0) return;
     currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
     showSlide(currentSlide);
+}
+
+// Auto-rotate carousel, restarting the clock whenever the visitor takes over so
+// a slide they just chose doesn't get yanked away a moment later.
+let heroAutoplay = null;
+
+function startHeroAutoplay() {
+    if (totalSlides < 2) return;
+    heroAutoplay = setInterval(nextSlide, 6000);
+}
+
+function resetHeroAutoplay() {
+    clearInterval(heroAutoplay);
+    startHeroAutoplay();
 }
 
 // Carousel navigation buttons
@@ -45,14 +109,39 @@ const nextBtn = document.getElementById('nextBtn');
 const prevBtn = document.getElementById('prevBtn');
 
 if (nextBtn && prevBtn) {
-    nextBtn.addEventListener('click', nextSlide);
-    prevBtn.addEventListener('click', prevSlide);
+    nextBtn.addEventListener('click', () => {
+        nextSlide();
+        resetHeroAutoplay();
+    });
+    prevBtn.addEventListener('click', () => {
+        prevSlide();
+        resetHeroAutoplay();
+    });
 }
 
-// Auto-rotate carousel every 6 seconds if we have slides
-if (totalSlides > 0) {
-    setInterval(nextSlide, 6000);
-}
+addSwipe(
+    document.querySelector('.hero .carousel-container'),
+    () => {
+        nextSlide();
+        resetHeroAutoplay();
+    },
+    () => {
+        prevSlide();
+        resetHeroAutoplay();
+    }
+);
+
+startHeroAutoplay();
+
+// Don't keep advancing slides in a backgrounded tab — the visitor comes back to
+// a carousel that has silently run through several rotations.
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        clearInterval(heroAutoplay);
+    } else {
+        resetHeroAutoplay();
+    }
+});
 
 // ========== STICKY HEADER ==========
 const siteHeader = document.querySelector('.header');
@@ -74,64 +163,95 @@ if (siteHeader) {
 const themeToggle = document.getElementById('themeToggle');
 const body = document.body;
 
+function setThemeIcon(isDark) {
+    if (!themeToggle) return;
+    // Write into the icon span so the button's markup survives the toggle.
+    const icon = themeToggle.querySelector('.theme-icon') || themeToggle;
+    icon.textContent = isDark ? '☀️' : '🌙';
+}
+
 // Check for saved theme preference or default to light mode
 const currentTheme = localStorage.getItem('theme') || 'light';
 if (currentTheme === 'dark') {
     body.classList.add('dark-mode');
-    themeToggle.textContent = '☀️';
+    setThemeIcon(true);
 }
 
-themeToggle.addEventListener('click', () => {
-    body.classList.toggle('dark-mode');
-
-    if (body.classList.contains('dark-mode')) {
-        localStorage.setItem('theme', 'dark');
-        themeToggle.textContent = '☀️';
-    } else {
-        localStorage.setItem('theme', 'light');
-        themeToggle.textContent = '🌙';
-    }
-});
+if (themeToggle) {
+    themeToggle.addEventListener('click', () => {
+        const isDark = body.classList.toggle('dark-mode');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        setThemeIcon(isDark);
+    });
+}
 
 // ========== MOBILE MENU TOGGLE ==========
+// Keep in sync with the `max-width: 900px` nav breakpoint in styles.css.
+const NAV_BREAKPOINT = 900;
 const menuToggle = document.getElementById('menuToggle');
 const navbar = document.querySelector('.navbar');
 
 function closeMobileMenu() {
+    if (!navbar || !menuToggle) return;
     navbar.classList.remove('nav-open');
     menuToggle.classList.remove('active');
+    menuToggle.setAttribute('aria-expanded', 'false');
     menuToggle.textContent = '☰';
+    if (siteHeader) siteHeader.classList.remove('nav-active');
 }
 
 function openMobileMenu() {
+    if (!navbar || !menuToggle) return;
     navbar.classList.add('nav-open');
     menuToggle.classList.add('active');
+    menuToggle.setAttribute('aria-expanded', 'true');
     menuToggle.textContent = '✕';
+    if (siteHeader) siteHeader.classList.add('nav-active');
 }
 
-menuToggle.addEventListener('click', () => {
-    if (navbar.classList.contains('nav-open')) {
-        closeMobileMenu();
-    } else {
-        openMobileMenu();
-    }
-});
+if (menuToggle && navbar) {
+    menuToggle.setAttribute('aria-label', 'Menu');
+    menuToggle.setAttribute('aria-expanded', 'false');
 
-// Close menu when a link is clicked
-document.querySelectorAll('.nav-links a').forEach(link => {
-    link.addEventListener('click', () => {
-        if (window.innerWidth <= 768) {
+    menuToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (navbar.classList.contains('nav-open')) {
+            closeMobileMenu();
+        } else {
+            openMobileMenu();
+        }
+    });
+
+    // Close menu when a link is clicked
+    document.querySelectorAll('.nav-links a').forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth <= NAV_BREAKPOINT) {
+                closeMobileMenu();
+            }
+        });
+    });
+
+    // Tapping anywhere outside the panel dismisses it.
+    document.addEventListener('click', (e) => {
+        if (!navbar.classList.contains('nav-open')) return;
+        if (!navbar.contains(e.target) && e.target !== menuToggle) {
             closeMobileMenu();
         }
     });
-});
 
-// Close menu on resize back to desktop width
-window.addEventListener('resize', () => {
-    if (window.innerWidth > 768) {
-        closeMobileMenu();
-    }
-});
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeMobileMenu();
+    });
+
+    // Close on a real orientation/width change only. Comparing against the last
+    // known width keeps the URL-bar resize on mobile from closing the menu.
+    let lastWidth = window.innerWidth;
+    window.addEventListener('resize', () => {
+        if (window.innerWidth === lastWidth) return;
+        lastWidth = window.innerWidth;
+        if (window.innerWidth > NAV_BREAKPOINT) closeMobileMenu();
+    });
+}
 
 // ========== FAQ ACCORDION ==========
 const faqItems = document.querySelectorAll('.faq-item');
@@ -334,17 +454,23 @@ function initBeforeAfterSliders() {
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         const href = this.getAttribute('href');
-        if (href !== '#') {
-            e.preventDefault();
-            const target = document.querySelector(href);
-            if (target) {
-                const offsetTop = target.offsetTop;
-                window.scrollTo({
-                    top: offsetTop,
-                    behavior: 'smooth'
-                });
-            }
-        }
+        if (href === '#') return;
+
+        const target = document.querySelector(href);
+        if (!target) return;
+
+        e.preventDefault();
+
+        // The header is fixed, so scrolling to the raw offset buries the top of
+        // the section underneath it — most noticeable on mobile, where the
+        // section heading disappears entirely.
+        const headerHeight = siteHeader ? siteHeader.offsetHeight : 0;
+        const top = target.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+
+        window.scrollTo({
+            top: Math.max(0, top),
+            behavior: 'smooth'
+        });
     });
 });
 
@@ -384,39 +510,38 @@ if ('IntersectionObserver' in window) {
 // ========== INITIALIZATION ==========
 document.addEventListener('DOMContentLoaded', function () {
     initCarousel();
-    initResultsCarousel();
     observeElements();
     initBeforeAfterSliders();
-
-    // Add parallax effect to hero section on scroll
-    window.addEventListener('scroll', function () {
-        const hero = document.querySelector('.hero');
-        if (hero) {
-            const scrollPosition = window.pageYOffset;
-            hero.style.backgroundPosition = `center ${scrollPosition * 0.5}px`;
-        }
-    });
 });
 
-// ========== CONTACT FORM BEHAVIOR ==========
-document.querySelectorAll('input, textarea, select').forEach(input => {
-    input.addEventListener('focus', function () {
-        this.parentElement.style.transform = 'scale(1.02)';
-    });
+// NOTE: the hero "parallax" that used to live here wrote
+// hero.style.backgroundPosition on every scroll event. `.hero` has no
+// background image of its own (the slides carry them), so it did nothing
+// visible while forcing a style recalc on every frame of every scroll — the
+// main source of scroll stutter on phones.
 
-    input.addEventListener('blur', function () {
-        this.parentElement.style.transform = 'scale(1)';
-    });
-});
+// NOTE: focusing an input used to scale its parent by 1.02. On mobile that
+// jittered the layout as the keyboard opened, and on the phone field it
+// transformed `.iti`, which made the country dropdown detach from the input.
 
 // ========== KEYBOARD NAVIGATION FOR CAROUSEL ==========
 document.addEventListener('keydown', function (event) {
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+
+    // Otherwise moving the caret inside the contact form flips the hero slide.
+    const el = document.activeElement;
+    if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable)) {
+        return;
+    }
+
     if (event.key === 'ArrowLeft') {
         prevSlide();
+        resetHeroAutoplay();
         const glassPrev = document.querySelector('.results-glass .glass-prev');
         if (glassPrev) glassPrev.click();
-    } else if (event.key === 'ArrowRight') {
+    } else {
         nextSlide();
+        resetHeroAutoplay();
         const glassNext = document.querySelector('.results-glass .glass-next');
         if (glassNext) glassNext.click();
     }
@@ -495,26 +620,12 @@ function shareOnSocial(platform, url = window.location.href) {
     }
 }
 
-// ========== PAGE VISIBILITY API ==========
-document.addEventListener('visibilitychange', function () {
-    if (document.hidden) {
-        // Pause any auto-playing content
-        // e.g., carousel can be paused
-    } else {
-        // Resume content
-    }
-});
-
-// ========== RESPONSIVE MENU FIX ==========
-window.addEventListener('resize', function () {
-    if (window.innerWidth > 768) {
-        navbar.style.display = 'flex';
-    } else {
-        navbar.style.display = 'none';
-    }
-});
-
-console.log('Aesthemeet website initialized successfully!');
+// NOTE: there used to be a "responsive menu fix" resize handler here that set
+// navbar.style.display directly. Mobile browsers fire `resize` whenever the URL
+// bar collapses on scroll or the keyboard opens, so it stamped an inline
+// `display: none` on the navbar that outranked `.navbar.nav-open` — the
+// hamburger stopped working after the first scroll. The CSS already handles
+// showing/hiding the nav per breakpoint, so no JS is needed.
 
 // ========== GLASS RESULTS CAROUSEL ==========
 function initResultsCarousel() {
@@ -555,6 +666,14 @@ function initResultsCarousel() {
         resetAutoSlide();
     });
 
+    // The arrows are hidden below 768px, so this is the only way through the
+    // results on a phone.
+    addSwipe(
+        document.querySelector('.results-glass .glass-carousel'),
+        () => { nextSlide(); resetAutoSlide(); },
+        () => { prevSlide(); resetAutoSlide(); }
+    );
+
     // Auto sliding
     function startAutoSlide() {
         autoSlideInterval = setInterval(nextSlide, 5000); // 5 seconds
@@ -564,6 +683,14 @@ function initResultsCarousel() {
         clearInterval(autoSlideInterval);
         startAutoSlide();
     }
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            clearInterval(autoSlideInterval);
+        } else {
+            resetAutoSlide();
+        }
+    });
 
     // Start auto slide on init
     startAutoSlide();
@@ -631,6 +758,12 @@ function initServicesCarousel() {
 
         slides[currentIndex].classList.add('active');
         dots[currentIndex].classList.add('active');
+
+        // The tab strip scrolls horizontally on small screens; keep the active
+        // tab visible when the slide changes via swipe or arrow.
+        if (dots[currentIndex].scrollIntoView) {
+            dots[currentIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
     }
 
     // Dot click
@@ -643,6 +776,12 @@ function initServicesCarousel() {
     // Arrow click
     if (prevBtn) prevBtn.addEventListener('click', () => showSlide(currentIndex - 1));
     if (nextBtn) nextBtn.addEventListener('click', () => showSlide(currentIndex + 1));
+
+    addSwipe(
+        document.querySelector('.svc-slides-wrapper'),
+        () => showSlide(currentIndex + 1),
+        () => showSlide(currentIndex - 1)
+    );
 }
 
 initServicesCarousel();
