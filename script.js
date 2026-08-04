@@ -593,7 +593,8 @@ function observeElements() {
     const observer = new IntersectionObserver(function (entries) {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                if (entry.target.classList.contains('slide-in-left')) {
+                if (entry.target.classList.contains('slide-in-left') ||
+                    entry.target.classList.contains('will-reveal')) {
                     entry.target.classList.add('revealed');
                 } else {
                     entry.target.style.opacity = '1';
@@ -635,6 +636,16 @@ function observeElements() {
 
     // Observe elements that slide in from the left (reveal effect)
     document.querySelectorAll('.slide-in-left').forEach(element => {
+        observer.observe(element);
+    });
+
+    // The treatment timeline arrives step by step rather than as five cards
+    // appearing at once — the order is the whole message of that section. The
+    // hidden state is applied from here, not from the stylesheet, so the cards
+    // are simply visible if this script never runs.
+    document.querySelectorAll('.process-card').forEach((element, i) => {
+        element.classList.add('will-reveal');
+        element.style.animationDelay = (i * 90) + 'ms';
         observer.observe(element);
     });
 }
@@ -747,13 +758,11 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 
         e.preventDefault();
 
-        // The header is fixed, so scrolling to the raw offset buries the top of
-        // the section underneath it — most noticeable on mobile, where the
-        // section heading disappears entirely. `bottom` rather than
-        // `offsetHeight`: the header starts below the iOS status bar inset, so
-        // its height alone is short by that inset.
-        const headerHeight = siteHeader ? siteHeader.getBoundingClientRect().bottom : 0;
-        const top = target.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+        // Straight to the section's own top edge. Sections reserve room for the
+        // fixed header in their top padding, so no extra offset is needed here —
+        // subtracting the header height again would leave the tail of the
+        // previous section on screen.
+        const top = target.getBoundingClientRect().top + window.pageYOffset;
 
         window.scrollTo({
             top: Math.max(0, top),
@@ -761,6 +770,60 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         });
     });
 });
+
+// ========== LANDING ON A #HASH FROM ANOTHER PAGE ==========
+// The header links to `index.html#faq` from the services and results pages.
+// The browser does jump to the fragment, but it does so before the hero photo,
+// the section images and the web fonts have arrived — each of which then grows
+// the layout *above* the target and carries it back off screen, so the visitor
+// lands on the top of the homepage instead of on the FAQ. Re-aiming after each
+// of those settles is what actually gets them there.
+(function landOnHashTarget() {
+    const rawHash = window.location.hash;
+    if (!rawHash || rawHash.length < 2) return;
+
+    let target;
+    try {
+        target = document.querySelector(rawHash);
+    } catch (err) {
+        return; // not a valid selector (e.g. "#!/something")
+    }
+    if (!target) return;
+
+    let cancelled = false;
+
+    function aim() {
+        if (cancelled) return;
+        // No header offset: every section already carries enough top padding to
+        // clear the fixed header, so its own top edge is the right landing
+        // point. Subtracting the header height on top of that would park the
+        // previous section's last 80px on screen.
+        const top = target.getBoundingClientRect().top + window.pageYOffset;
+        window.scrollTo({ top: Math.max(0, top), behavior: 'auto' });
+    }
+
+    // The moment the visitor takes over, stop correcting — being yanked back
+    // is worse than landing a little off.
+    function cancel() {
+        cancelled = true;
+    }
+    window.addEventListener('wheel', cancel, { passive: true, once: true });
+    window.addEventListener('touchstart', cancel, { passive: true, once: true });
+    window.addEventListener('keydown', cancel, { once: true });
+
+    aim();
+    window.addEventListener('load', () => {
+        aim();
+        // One more after layout has settled: late images without dimensions and
+        // the font swap both land shortly after `load`.
+        setTimeout(aim, 120);
+        setTimeout(aim, 400);
+    });
+
+    if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(() => setTimeout(aim, 60));
+    }
+})();
 
 // ========== COUNTER ANIMATION ==========
 function animateCounter(element, target, duration = 2000) {
@@ -1067,7 +1130,9 @@ initTestimonialsSlider();
 
 // ========== SERVICES PAGE CAROUSEL ==========
 function initServicesCarousel() {
+    const dotsEl = document.querySelector('.svc-dots');
     const dots = document.querySelectorAll('.svc-dot');
+    const slidesEl = document.querySelector('.svc-slides');
     const slides = document.querySelectorAll('.svc-slide');
     const prevBtn = document.querySelector('.svc-prev');
     const nextBtn = document.querySelector('.svc-next');
@@ -1076,31 +1141,122 @@ function initServicesCarousel() {
 
     let currentIndex = 0;
 
-    function showSlide(index) {
+    /* --- The pill that slides between tabs ---------------------------------
+       Built here rather than in the markup so all four language copies of this
+       page pick it up without being edited. */
+    let indicator = null;
+    if (dotsEl) {
+        indicator = document.createElement('span');
+        indicator.className = 'svc-tab-indicator';
+        indicator.setAttribute('aria-hidden', 'true');
+        dotsEl.appendChild(indicator);
+        dotsEl.classList.add('has-indicator');
+    }
+
+    function positionIndicator(animate) {
+        if (!indicator) return;
+        const dot = dots[currentIndex];
+        if (!dot || !dot.offsetWidth) return;
+
+        // The very first placement must not slide in from the top-left corner,
+        // so it is applied with transitions off.
+        if (!animate) indicator.style.transition = 'none';
+
+        indicator.style.width = dot.offsetWidth + 'px';
+        indicator.style.height = dot.offsetHeight + 'px';
+        indicator.style.transform = 'translate(' + dot.offsetLeft + 'px,' + dot.offsetTop + 'px)';
+        indicator.classList.add('is-ready');
+
+        if (!animate) {
+            // Read back a layout property so the untransitioned position is
+            // committed before transitions are handed back.
+            void indicator.offsetWidth;
+            indicator.style.transition = '';
+        }
+    }
+
+    /* --- ARIA ---------------------------------------------------------------
+       The tabs are real buttons already; this tells assistive tech that they
+       switch panels rather than navigate. Ids are generated so the markup
+       doesn't have to carry them in four languages. */
+    if (dotsEl) dotsEl.setAttribute('role', 'tablist');
+    dots.forEach((dot, i) => {
+        const panel = slides[i];
+        dot.setAttribute('role', 'tab');
+        dot.id = dot.id || 'svc-tab-' + i;
+        dot.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+        // Only the selected tab stays in the tab order; arrow keys move between
+        // them, which is how a tablist is expected to behave.
+        dot.setAttribute('tabindex', i === 0 ? '0' : '-1');
+        if (panel) {
+            panel.id = panel.id || 'svc-panel-' + i;
+            panel.setAttribute('role', 'tabpanel');
+            panel.setAttribute('aria-labelledby', dot.id);
+            dot.setAttribute('aria-controls', panel.id);
+        }
+    });
+
+    function showSlide(index, opts) {
+        const options = opts || {};
+        const total = slides.length;
         // Wrap around
-        if (index >= slides.length) index = 0;
-        if (index < 0) index = slides.length - 1;
+        if (index >= total) index = 0;
+        if (index < 0) index = total - 1;
+        if (index === currentIndex && !options.force) return;
+
+        // Which way the new slide should travel in. Stepping from the last tab
+        // to the first is still "forward", so compare on the wrapped distance
+        // rather than on the raw index.
+        const forward = ((index - currentIndex + total) % total) <= total / 2;
+        if (slidesEl) slidesEl.style.setProperty('--svc-dir', forward ? '1' : '-1');
+
         currentIndex = index;
 
         slides.forEach(s => s.classList.remove('active'));
-        dots.forEach(d => d.classList.remove('active'));
+        dots.forEach((d, i) => {
+            d.classList.remove('active');
+            d.setAttribute('aria-selected', 'false');
+            d.setAttribute('tabindex', i === currentIndex ? '0' : '-1');
+        });
 
         slides[currentIndex].classList.add('active');
         dots[currentIndex].classList.add('active');
+        dots[currentIndex].setAttribute('aria-selected', 'true');
+
+        positionIndicator(true);
 
         // The tab strip scrolls horizontally on small screens; keep the active
-        // tab visible when the slide changes via swipe or arrow.
-        if (dots[currentIndex].scrollIntoView) {
+        // tab visible when the slide changes via swipe or arrow. Guarded on the
+        // strip actually overflowing, so on desktop this can never nudge the
+        // page itself.
+        if (dotsEl && dotsEl.scrollWidth > dotsEl.clientWidth + 1) {
             dots[currentIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         }
+
+        if (options.focusTab) dots[currentIndex].focus();
     }
 
     // Dot click
     dots.forEach(dot => {
         dot.addEventListener('click', () => {
-            showSlide(parseInt(dot.dataset.index));
+            showSlide(parseInt(dot.dataset.index, 10));
         });
     });
+
+    // Left/right walk the tabs while one of them has focus — expected of a
+    // tablist, and it makes the carousel usable without a mouse.
+    if (dotsEl) {
+        dotsEl.addEventListener('keydown', (e) => {
+            let next = null;
+            if (e.key === 'ArrowRight') next = currentIndex + 1;
+            else if (e.key === 'ArrowLeft') next = currentIndex - 1;
+            else if (e.key === 'Home') next = 0;
+            else if (e.key === 'End') next = slides.length - 1;
+            if (next === null) return;
+            e.preventDefault();
+            showSlide(next, { focusTab: true });
+        });
+    }
 
     // Arrow click
     if (prevBtn) prevBtn.addEventListener('click', () => showSlide(currentIndex - 1));
@@ -1111,6 +1267,15 @@ function initServicesCarousel() {
         () => showSlide(currentIndex + 1),
         () => showSlide(currentIndex - 1)
     );
+
+    // The pill is measured from the tabs, so it has to be re-measured whenever
+    // they can have changed size: the font swap and any reflow.
+    positionIndicator(false);
+    window.addEventListener('load', () => positionIndicator(false));
+    window.addEventListener('resize', debounce(() => positionIndicator(false), 150));
+    if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(() => positionIndicator(false));
+    }
 }
 
 initServicesCarousel();
