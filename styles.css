@@ -1381,7 +1381,14 @@ section:not(.hero) {
     margin-bottom: 0;
 }
 
+/* The map is a link to the clinic's Google Maps listing, with the live map as
+   its face. A short maps.app.goo.gl URL cannot be framed at all (Google serves
+   it with X-Frame-Options: SAMEORIGIN), which is why it rendered as an empty
+   grey box; the frame has to be an `output=embed` URL, and the place page is
+   reached by clicking through instead. */
 .cfs-map {
+    display: block;
+    position: relative;
     width: 100%;
     height: 220px;
     border-radius: 16px;
@@ -1389,13 +1396,78 @@ section:not(.hero) {
     margin-bottom: 40px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     filter: grayscale(0.2) contrast(1.05);
+    cursor: pointer;
+    transition: border-color 0.3s ease, filter 0.3s ease;
 }
 
+.cfs-map:hover,
+.cfs-map:focus-visible {
+    border-color: rgba(255, 255, 255, 0.3);
+    filter: grayscale(0) contrast(1.05);
+}
+
+.cfs-map:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 3px;
+}
+
+/* Without this the iframe swallows every click and the surrounding link can
+   never fire — which is the whole reason the map used to leave people on a
+   pair of coordinates instead of the clinic's page. */
 .cfs-map iframe {
     width: 100%;
     height: 100%;
     border: 0;
     display: block;
+    pointer-events: none;
+}
+
+/* Says the map is a link, since it no longer pans under the finger. */
+.cfs-map-cta {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 14px;
+    border-radius: 30px;
+    background: rgba(17, 20, 24, 0.82);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    color: #fff;
+    font-size: 12.5px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    pointer-events: none;
+    transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.cfs-map:hover .cfs-map-cta {
+    background: rgba(17, 20, 24, 0.95);
+    border-color: rgba(255, 255, 255, 0.32);
+}
+
+.cfs-map-cta i {
+    font-size: 13px;
+    color: var(--accent-color);
+}
+
+/* The map card is only ~130px tall on a phone; the badge has to stay a label on
+   it rather than become a banner across it. */
+@media (max-width: 600px) {
+    .cfs-map-cta {
+        right: 8px;
+        bottom: 8px;
+        padding: 6px 11px;
+        font-size: 11px;
+        gap: 6px;
+    }
+
+    .cfs-map-cta i {
+        font-size: 11px;
+    }
 }
 
 .cfs-copyright {
