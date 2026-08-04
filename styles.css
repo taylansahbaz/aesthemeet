@@ -3558,16 +3558,24 @@ body.dark-mode .iti__country.iti__highlight {
 @media (max-width: 1024px) {
 
     html {
-        /* `proximity`, not `mandatory`: if a section ever does outgrow the
-           viewport (long translations, large text settings), proximity still
-           snaps between sections but never traps the user mid-section. */
-        scroll-snap-type: y proximity;
+        /* `mandatory`, now that every panel is verified to fit one screen.
+           `proximity` only engaged near a boundary, so a slow drag or a small
+           correction left the page resting mid-section — the section below
+           hanging half off the bottom, and a jittery feel when nudging back up. */
+        scroll-snap-type: y mandatory;
         scroll-padding-top: 0;
+
+        /* Anchor links call scrollTo({behavior:'smooth'}) themselves. Leaving
+           smooth on here too made the browser animate every snap correction,
+           which is what made fine adjustments feel like they were fighting back. */
+        scroll-behavior: auto;
     }
 
     .hero,
     section:not(.hero) {
         scroll-snap-align: start;
+        /* Land on every panel instead of flying past one on a fast swipe. */
+        scroll-snap-stop: always;
     }
 
     section:not(.hero) {
@@ -3815,6 +3823,7 @@ body.dark-mode .iti__country.iti__highlight {
         justify-content: center;
         justify-content: safe center;
         scroll-snap-align: start;
+        scroll-snap-stop: always;
         padding: 72px 0 20px;
     }
 
@@ -5021,5 +5030,336 @@ body.dark-mode .iti__country.iti__highlight {
 
     .features-grid {
         gap: clamp(9px, 1.5dvh, 16px);
+    }
+}
+
+
+/* ==========================================================================
+   TESTIMONIALS — SWIPE AFFORDANCE
+   With one card filling the row there was nothing telling anyone more reviews
+   existed. The arrows used to sit on top of the quote and clipped it, so they
+   move below the card instead, with a position counter between them. The
+   counter element is created in script.js so it needs no per-language markup.
+   ========================================================================== */
+
+@media (max-width: 500px) {
+
+    .testimonials-wrapper {
+        display: grid;
+        grid-template-columns: auto auto auto;
+        justify-content: center;
+        align-items: center;
+        column-gap: 14px;
+        row-gap: clamp(10px, 1.8dvh, 18px);
+    }
+
+    .testimonials-slider {
+        grid-column: 1 / -1;
+        grid-row: 1;
+    }
+
+    /* Overrides the `display: none` set for this width further up. */
+    .testimonials-prev,
+    .testimonials-next {
+        display: flex;
+        position: static;
+        transform: none;
+        grid-row: 2;
+        width: 44px;
+        height: 44px;
+        background: var(--bg-white);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(26, 95, 122, 0.12);
+    }
+
+    .testimonials-prev {
+        grid-column: 1;
+    }
+
+    .testimonials-next {
+        grid-column: 3;
+    }
+
+    .testimonials-prev:hover,
+    .testimonials-next:hover,
+    .testimonials-prev:active,
+    .testimonials-next:active {
+        transform: none;
+        background: var(--primary-color);
+        color: #fff;
+    }
+
+    /* Qualified so it outranks the base `display: none` below, which has to
+       stay after this block in the file. */
+    .testimonials-wrapper .testimonials-count {
+        grid-column: 2;
+        grid-row: 2;
+        display: block;
+        min-width: 56px;
+        text-align: center;
+        font-size: clamp(13px, 1.9dvh, 15px);
+        font-weight: 600;
+        color: var(--primary-color);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .testimonials-count span {
+        color: var(--text-light);
+        font-weight: 400;
+    }
+}
+
+/* The counter is only meaningful next to the arrows on the single-card layout. */
+.testimonials-count {
+    display: none;
+}
+
+
+/* ==========================================================================
+   INNER PAGE HEADER — SCROLLED STATE
+   `.inner-page .header { background-color: transparent }` is declared after
+   `.header.scrolled` with the same specificity, so on the services and results
+   pages the header never picked up its scrolled background. Scrolling over the
+   white content left a white logo and white nav links on white. Qualifying the
+   scrolled state with `.inner-page` settles it.
+   ========================================================================== */
+
+.inner-page .header.scrolled {
+    background-color: rgba(26, 95, 122, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.inner-page .header.scrolled .logo,
+.inner-page .header.scrolled .nav-links a,
+.inner-page .header.scrolled .language-selector a,
+.inner-page .header.scrolled .language-selector span,
+.inner-page .header.scrolled .menu-toggle {
+    color: #fff;
+}
+
+.inner-page .header.scrolled .language-selector a:hover,
+.inner-page .header.scrolled .lang-active {
+    color: var(--secondary-color);
+}
+
+
+/* ==========================================================================
+   iOS SAFE AREA
+   The pages are served with viewport-fit=cover so the artwork runs edge to
+   edge, including behind the status bar. Two consequences to handle: the bar
+   area and the rubber-band overscroll both paint the <html> background (white
+   by default, which is the white strip at the top of Safari), and the header
+   would otherwise sit underneath the status bar.
+   ========================================================================== */
+
+html {
+    background-color: var(--primary-dark);
+}
+
+body.dark-mode {
+    background-color: var(--bg-white);
+}
+
+.header .header-content {
+    padding-top: calc(20px + env(safe-area-inset-top));
+}
+
+@media (max-width: 900px) {
+
+    .header .header-content {
+        padding-top: calc(14px + env(safe-area-inset-top));
+    }
+
+    /* Sections start below the header, which is now taller by the inset. */
+    section:not(.hero),
+    .cfs-left,
+    .cfs-right {
+        padding-top: calc(clamp(72px, 10dvh, 104px) + env(safe-area-inset-top));
+        padding-bottom: calc(clamp(20px, 4dvh, 44px) + env(safe-area-inset-bottom));
+    }
+
+    .services-carousel-section,
+    .marquee-section {
+        padding-top: calc(72px + env(safe-area-inset-top));
+        padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    }
+
+    /* Keep the hero's own controls clear of the status bar and home indicator. */
+    .carousel-dots {
+        bottom: calc(18px + env(safe-area-inset-bottom));
+    }
+}
+
+@media (max-width: 480px) {
+    .header .header-content {
+        padding-top: calc(12px + env(safe-area-inset-top));
+    }
+}
+
+@media (max-width: 900px) and (max-height: 700px) {
+
+    section:not(.hero),
+    .cfs-left,
+    .cfs-right {
+        padding-top: calc(66px + env(safe-area-inset-top));
+        padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    }
+}
+
+
+/* ==========================================================================
+   TECHNIQUE SLIDE — VISUAL-FIRST ON MOBILE
+   The descriptive paragraph is the longest element on the page and the part
+   that made the slide read as wall-to-wall text. On phones it comes out
+   entirely and the photo takes the space: the badge chips and the checklist
+   already carry the same facts in scannable form, and the full prose is still
+   there on tablet and desktop.
+   ========================================================================== */
+
+@media (max-width: 700px) {
+
+    .svc-slide-content>p {
+        display: none;
+    }
+
+    .svc-slide-img img {
+        height: clamp(180px, 26dvh, 300px);
+    }
+
+    .svc-prev,
+    .svc-next {
+        top: clamp(90px, 13dvh, 150px);
+    }
+
+    .svc-slide-content h2 {
+        font-size: clamp(21px, 3.1dvh, 28px);
+    }
+
+    .svc-slide-content h2 span {
+        font-size: clamp(13px, 1.9dvh, 16px);
+    }
+
+    .svc-details {
+        margin-bottom: clamp(12px, 1.9dvh, 20px);
+    }
+
+    .svc-detail {
+        font-size: clamp(12px, 1.7dvh, 14.5px);
+        padding: clamp(8px, 1.3dvh, 13px) clamp(12px, 3.4vw, 18px);
+    }
+
+    .svc-features li {
+        font-size: clamp(13px, 1.75dvh, 15px);
+        line-height: 1.5;
+    }
+
+    .svc-features {
+        gap: clamp(5px, 0.9dvh, 10px);
+        padding: clamp(12px, 1.9dvh, 18px) clamp(14px, 4vw, 20px);
+    }
+}
+
+/* Short phones: the photo gives the height back rather than the type. */
+@media (max-width: 700px) and (max-height: 700px) {
+
+    .svc-slide-img img {
+        height: 165px;
+    }
+
+    .svc-prev,
+    .svc-next {
+        top: 82px;
+    }
+}
+
+
+/* ==========================================================================
+   WHY US — REGROUP THE MOSAIC ON PHONES
+   The markup interleaves the cards (feature, stat, feature, stat, ...). In two
+   columns that puts a feature card in every row, and since a row is as tall as
+   its tallest item, all three rows inherit the tall feature height — the
+   section ran ~70px past the fold on the German copy.
+
+   Reordering visually (features first, stats after) gives rows of
+   feature+feature / feature+stat / stat+stat, so only two rows carry the tall
+   card. Source order is untouched, so reading order and desktop are as authored.
+   ========================================================================== */
+
+@media (max-width: 430px) {
+
+    .features-grid .feature-item {
+        order: 1;
+    }
+
+    .features-grid .stat-item {
+        order: 2;
+    }
+
+    .feature-item p {
+        font-size: clamp(11.5px, 1.5dvh, 13.5px);
+        line-height: 1.4;
+    }
+
+    .feature-item,
+    .stat-item {
+        padding: clamp(12px, 1.7dvh, 22px) clamp(10px, 2.8vw, 16px);
+    }
+
+    .feature-icon {
+        width: clamp(38px, 4.4dvh, 54px);
+        height: clamp(38px, 4.4dvh, 54px);
+        margin-bottom: clamp(7px, 1.1dvh, 12px);
+        font-size: clamp(17px, 2.1dvh, 24px);
+    }
+}
+
+/* The visual-first slide freed the paragraph's height; the photo took slightly
+   more of it back than there was to give on the longer translations. */
+@media (max-width: 700px) {
+
+    .svc-slide-img img {
+        height: clamp(165px, 21dvh, 260px);
+    }
+
+    .svc-prev,
+    .svc-next {
+        top: clamp(82px, 10.5dvh, 130px);
+    }
+}
+
+
+/* Short phones, services page. Has to sit after the visual-first block above,
+   whose clamp minimums are tuned for a 844px screen and run ~6px long at 667px
+   on the German and English copy. */
+@media (max-width: 700px) and (max-height: 700px) {
+
+    .svc-slide-img img {
+        height: 146px;
+    }
+
+    .svc-prev,
+    .svc-next {
+        top: 73px;
+    }
+
+    .svc-features {
+        gap: 4px;
+        padding: 10px 13px;
+    }
+
+    .svc-features li {
+        font-size: 12.5px;
+        line-height: 1.4;
+    }
+
+    .svc-details {
+        margin-bottom: 10px;
+    }
+
+    .svc-detail {
+        font-size: 11.5px;
+        padding: 7px 11px;
     }
 }

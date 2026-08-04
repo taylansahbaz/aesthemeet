@@ -707,29 +707,70 @@ function initTestimonialsSlider() {
 
     if (!slider || !prevBtn || !nextBtn) return;
 
-    nextBtn.addEventListener('click', () => {
+    const cards = slider.querySelectorAll('.testimonial-card');
+
+    // The gap is a clamp() that changes per breakpoint, so read it rather than
+    // assuming the 30px the desktop layout happens to use.
+    function step() {
         const card = slider.querySelector('.testimonial-card');
-        const scrollAmount = card.offsetWidth + 30; // 30px is the gap
-        
+        if (!card) return 0;
+        const gap = parseFloat(getComputedStyle(slider).columnGap) || 0;
+        return card.offsetWidth + gap;
+    }
+
+    // On phones a single card fills the row, so nothing hinted that there were
+    // seven more reviews behind it. This counter sits between the arrows below
+    // the card; it is built here so no per-language markup has to change.
+    let counter = null;
+    if (cards.length > 1) {
+        counter = document.createElement('div');
+        counter.className = 'testimonials-count';
+        counter.setAttribute('aria-live', 'polite');
+        slider.parentElement.appendChild(counter);
+    }
+
+    function currentIndex() {
+        const s = step();
+        if (!s) return 0;
+        // Clamp: the last page can't scroll a full step when a card peeks.
+        return Math.min(cards.length - 1, Math.max(0, Math.round(slider.scrollLeft / s)));
+    }
+
+    function updateCounter() {
+        if (!counter) return;
+        counter.innerHTML = (currentIndex() + 1) + ' <span>/ ' + cards.length + '</span>';
+    }
+
+    let ticking = false;
+    slider.addEventListener('scroll', () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+            updateCounter();
+            ticking = false;
+        });
+    }, { passive: true });
+
+    window.addEventListener('resize', updateCounter);
+    updateCounter();
+
+    nextBtn.addEventListener('click', () => {
         // Check if we are at the end (with a 10px buffer for rounding errors)
         if (slider.scrollLeft + slider.clientWidth >= slider.scrollWidth - 10) {
             // Reached the end, circular link back to the beginning
             slider.scrollTo({ left: 0, behavior: 'smooth' });
         } else {
-            slider.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+            slider.scrollBy({ left: step(), behavior: 'smooth' });
         }
     });
 
     prevBtn.addEventListener('click', () => {
-        const card = slider.querySelector('.testimonial-card');
-        const scrollAmount = card.offsetWidth + 30;
-        
         // Check if we are at the beginning
         if (slider.scrollLeft <= 10) {
             // Reached the beginning, circular link to the end
             slider.scrollTo({ left: slider.scrollWidth, behavior: 'smooth' });
         } else {
-            slider.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+            slider.scrollBy({ left: -step(), behavior: 'smooth' });
         }
     });
 }
