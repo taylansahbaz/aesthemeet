@@ -1234,6 +1234,11 @@ function initServicesCarousel() {
         }
 
         if (options.focusTab) dots[currentIndex].focus();
+
+        // Every change — a click, a swipe, an arrow key or the timer itself —
+        // restarts the countdown, so a slide the visitor just chose always gets
+        // its full turn rather than the remainder of the previous one.
+        restartProgress();
     }
 
     // Dot click
@@ -1262,11 +1267,111 @@ function initServicesCarousel() {
     if (prevBtn) prevBtn.addEventListener('click', () => showSlide(currentIndex - 1));
     if (nextBtn) nextBtn.addEventListener('click', () => showSlide(currentIndex + 1));
 
+    const wrapperEl = document.querySelector('.svc-slides-wrapper');
+
     addSwipe(
-        document.querySelector('.svc-slides-wrapper'),
+        wrapperEl,
         () => showSlide(currentIndex + 1),
         () => showSlide(currentIndex - 1)
     );
+
+    /* --- Autoplay -----------------------------------------------------------
+       The countdown is the progress bar: the bar's own CSS animation is what
+       ends the slide (animationend → next), so what is on screen and what the
+       timer thinks can never disagree — no setInterval racing a transition, and
+       pausing is one class rather than a cleared and re-armed timer.
+
+       It holds while the visitor is on the panel (hover or keyboard focus),
+       while the tab is in the background, and while the section is scrolled
+       out of view: nothing should change behind someone's back, and nobody
+       should return to the page having missed four slides. */
+    const SLIDE_INTERVAL_MS = 7000;
+    const panelEl = document.querySelector('.svc-carousel');
+    const prefersReducedMotion = window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let progressEl = null;
+    let progressFill = null;
+    // Several independent things can pause the carousel; it resumes only once
+    // every one of them has let go.
+    const holds = new Set();
+
+    if (panelEl && wrapperEl && slides.length > 1 && !prefersReducedMotion) {
+        progressEl = document.createElement('div');
+        progressEl.className = 'svc-progress';
+        progressEl.setAttribute('aria-hidden', 'true');
+        progressEl.style.setProperty('--svc-interval', SLIDE_INTERVAL_MS + 'ms');
+        progressFill = document.createElement('span');
+        progressEl.appendChild(progressFill);
+        panelEl.insertBefore(progressEl, wrapperEl);
+
+        progressFill.addEventListener('animationend', () => {
+            showSlide(currentIndex + 1);
+        });
+
+        const hold = (reason) => {
+            holds.add(reason);
+            syncPaused();
+        };
+        const release = (reason) => {
+            holds.delete(reason);
+            syncPaused();
+        };
+
+        // Guarded on a real pointer: on a touch screen `mouseenter` fires on tap
+        // and the matching `mouseleave` may never come, which would leave the
+        // carousel paused for the rest of the visit.
+        if (!window.matchMedia || window.matchMedia('(hover: hover)').matches) {
+            panelEl.addEventListener('mouseenter', () => hold('hover'));
+            panelEl.addEventListener('mouseleave', () => release('hover'));
+        }
+
+        // Only keyboard focus holds. A mouse click on a tab focuses it too, and
+        // holding on that would stop the carousel for good the first time
+        // someone picked a technique with the mouse.
+        panelEl.addEventListener('focusin', (e) => {
+            let keyboard = true;
+            try {
+                keyboard = e.target.matches(':focus-visible');
+            } catch (err) {
+                /* older browser: treat any focus as keyboard focus */
+            }
+            if (keyboard) hold('focus');
+        });
+        panelEl.addEventListener('focusout', () => release('focus'));
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) hold('hidden');
+            else release('hidden');
+        });
+
+        if ('IntersectionObserver' in window) {
+            const section = panelEl.closest('.services-carousel-section') || panelEl;
+            new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) release('offscreen');
+                    else hold('offscreen');
+                });
+            }, { threshold: 0.25 }).observe(section);
+        }
+    }
+
+    function syncPaused() {
+        if (!progressEl) return;
+        progressEl.classList.toggle('is-paused', holds.size > 0);
+    }
+
+    function restartProgress() {
+        if (!progressEl || !progressFill) return;
+        progressEl.classList.remove('is-running');
+        // Forces the cancelled animation to be committed, so re-adding the
+        // class starts a new run instead of continuing the old one.
+        void progressFill.offsetWidth;
+        progressEl.classList.add('is-running');
+        syncPaused();
+    }
+
+    restartProgress();
 
     // The pill is measured from the tabs, so it has to be re-measured whenever
     // they can have changed size: the font swap and any reflow.

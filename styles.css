@@ -303,7 +303,7 @@ body {
 
 .header.scrolled .theme-toggle,
 .header.scrolled .menu-toggle {
-    color: var(--primary-color);
+    color: white;
 }
 
 .theme-toggle:hover,
@@ -1974,19 +1974,22 @@ body.dark-mode .footer {
     background-attachment: fixed;
 }
 
-/* Lighter than it was (0.6 → 0.42 at the top): the panel in front is dark glass
-   now and carries the contrast for the type, so the overlay no longer has to
-   flatten the photograph to grey. What's left is a vignette that keeps the
-   corners from competing with the panel. */
+/* The section used to be blue on blue on blue: a teal overlay over a cold
+   clinical photograph, with a teal panel in front of it. Three saturated layers
+   of the same hue is what made the whole screen vibrate. The overlay is neutral
+   ink now, and it desaturates the photograph behind it rather than tinting it —
+   the picture keeps its detail and gives up its colour cast, so the only real
+   colour left in the section is the one accent. */
 .carousel-section-overlay {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background:
-        radial-gradient(120% 90% at 50% 35%, rgba(9, 30, 42, 0.15) 0%, rgba(9, 30, 42, 0.72) 100%),
-        linear-gradient(to bottom, rgba(9, 30, 42, 0.42) 0%, rgba(13, 61, 82, 0.72) 100%);
+   
+    /* Pulls the blue out of the banner photo instead of painting over it. */
+    backdrop-filter: saturate(0.45) brightness(0.92);
+    -webkit-backdrop-filter: saturate(0.45) brightness(0.92);
     z-index: 1;
 }
 
@@ -1996,22 +1999,21 @@ body.dark-mode .footer {
 }
 
 /* Premium Glass Panel
-   Was a near-opaque white slab (rgba(255,255,255,.88)) sitting on top of the
-   banner photograph: it hid the photo completely, so the section read as grey
-   text on a grey card and the picture behind it was wasted. Dark glass instead
-   — the photo stays visible through and around the panel, the type goes white,
-   and the whole section reads as one image rather than a form on a background.
-   Padding moves to the children so the slide photo can bleed to the edge. */
+   The panel used to be a teal gradient (0d3d52 → 1a5f7a) — a big saturated
+   colour field directly behind body copy, which is what made this screen tiring
+   to read. It is near-neutral ink now with only a whisper of cool in it: the
+   photograph and the single accent supply the colour, the surface stays quiet.
+   Padding lives on the children so the slide photo can bleed to the edge. */
 .glass-panel {
     background:
-        linear-gradient(135deg, rgba(9, 30, 42, 0.86) 0%, rgba(13, 61, 82, 0.78) 55%, rgba(26, 95, 122, 0.72) 100%);
-    backdrop-filter: blur(22px) saturate(1.25);
-    -webkit-backdrop-filter: blur(22px) saturate(1.25);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    border-radius: 24px;
+        linear-gradient(150deg, rgba(17, 20, 24, 0.90) 0%, rgba(23, 27, 32, 0.86) 60%, rgba(30, 35, 41, 0.82) 100%);
+    backdrop-filter: blur(26px) saturate(0.9);
+    -webkit-backdrop-filter: blur(26px) saturate(0.9);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 20px;
     padding: 0;
     overflow: hidden;
-    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 /* Dot tabs */
@@ -2019,12 +2021,60 @@ body.dark-mode .footer {
     position: relative;
     display: flex;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
     /* The panel itself has no padding any more, so the tab strip carries its
        own — this is what keeps the photo below able to bleed to the edge. */
-    padding: 26px 30px 24px;
+    padding: 22px 30px 20px;
     margin-bottom: 0;
     flex-wrap: wrap;
+}
+
+/* --- Autoplay -------------------------------------------------------------
+   The carousel advances on its own, so it needs to say so. A hairline across
+   the full width of the panel, draining between changes: it reads as the seam
+   between the tab strip and the slide when it is empty, and it tells the
+   visitor a change is coming without asking for attention. Built by script.js
+   so every language copy of the page gets it. */
+.svc-progress {
+    position: relative;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.07);
+    overflow: hidden;
+}
+
+.svc-progress span {
+    display: block;
+    height: 100%;
+    width: 100%;
+    transform-origin: left center;
+    transform: scaleX(0);
+    background: linear-gradient(to right, rgba(255, 107, 53, 0.55), var(--accent-color));
+}
+
+.svc-progress.is-running span {
+    animation: svcProgress var(--svc-interval, 7s) linear forwards;
+}
+
+.svc-progress.is-paused span {
+    animation-play-state: paused;
+}
+
+@keyframes svcProgress {
+    from {
+        transform: scaleX(0);
+    }
+
+    to {
+        transform: scaleX(1);
+    }
+}
+
+/* Autoplay is motion the visitor did not ask for: with reduced motion on, the
+   carousel stops advancing (script.js) and the bar has nothing to report. */
+@media (prefers-reduced-motion: reduce) {
+    .svc-progress {
+        display: none;
+    }
 }
 
 /* The filled pill behind the active tab. It used to be a background on the tab
@@ -2041,7 +2091,7 @@ body.dark-mode .footer {
     /* Solid white on the dark panel: the selected technique is the one thing
        on this card that has to be unmistakable from across the room. */
     background: #fff;
-    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
     pointer-events: none;
     opacity: 0;
     transition:
@@ -2055,32 +2105,32 @@ body.dark-mode .footer {
     opacity: 1;
 }
 
+/* Unselected tabs were outlined and filled — five bordered pills competing with
+   the one that is actually selected. Bare text now: the white pill is the only
+   thing drawn in the strip, which is the whole point of it. */
 .svc-dot {
     position: relative;
     z-index: 1;
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 11px 22px;
-    border: 1px solid rgba(255, 255, 255, 0.16);
+    padding: 11px 20px;
+    border: 1px solid transparent;
     border-radius: 40px;
-    background: rgba(255, 255, 255, 0.07);
-    color: rgba(255, 255, 255, 0.78);
-    font-size: 14.5px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 14px;
     font-weight: 500;
     font-family: inherit;
     letter-spacing: 0.2px;
     cursor: pointer;
     transition: color 0.35s ease, border-color 0.35s ease, background 0.35s ease,
-        transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease;
+        box-shadow 0.35s ease;
 }
 
 .svc-dot:hover {
-    border-color: rgba(255, 255, 255, 0.4);
     color: #fff;
-    background: rgba(255, 255, 255, 0.16);
-    transform: translateY(-2px);
-    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.25);
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .svc-dot:focus-visible {
@@ -2090,11 +2140,10 @@ body.dark-mode .footer {
 
 .svc-dot.active {
     background: #fff;
-    color: var(--primary-dark);
+    color: #14171b;
     font-weight: 600;
     border-color: transparent;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
-    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
 }
 
 /* Once the sliding pill exists it owns the fill, and the tab keeps only the
@@ -2110,13 +2159,16 @@ body.dark-mode .footer {
 }
 
 .svc-dot i {
-    font-size: 15px;
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), color 0.35s ease;
+    font-size: 14px;
+    opacity: 0.7;
+    transition: opacity 0.35s ease, color 0.35s ease;
 }
 
+/* The icon used to go teal on the white pill — a third colour in a strip that
+   only needs two states. It just sharpens instead. */
 .svc-dot.active i {
-    transform: scale(1.12);
-    color: var(--primary-light);
+    opacity: 1;
+    color: var(--accent-color);
 }
 
 /* Slides wrapper */
@@ -2273,8 +2325,8 @@ body.dark-mode .footer {
     position: absolute;
     inset: 0;
     background:
-        linear-gradient(to right, rgba(9, 30, 42, 0) 55%, rgba(9, 30, 42, 0.55) 100%),
-        linear-gradient(to top, rgba(9, 30, 42, 0.45), rgba(9, 30, 42, 0) 45%);
+        linear-gradient(to right, rgba(17, 20, 24, 0) 52%, rgba(17, 20, 24, 0.72) 100%),
+        linear-gradient(to top, rgba(17, 20, 24, 0.5), rgba(17, 20, 24, 0) 45%);
     pointer-events: none;
 }
 
@@ -2284,7 +2336,31 @@ body.dark-mode .footer {
     min-height: 440px;
     object-fit: cover;
     display: block;
+    /* The clinical photographs are cold and blue out of the camera. Held back a
+       little, they sit inside the neutral panel instead of shouting out of it. */
+    filter: saturate(0.72) contrast(1.04);
     transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* The panel was 800px tall for 370px of copy. `height: 100%` on the photo can't
+   resolve against a parent whose height is itself decided by the photo, so it
+   fell back to the file's own aspect ratio — a portrait PNG then stretched the
+   card to nearly the full screen and left a third of it empty under the text.
+   Taken out of the flow, the photo contributes no height at all: the card is as
+   tall as its copy (with a floor so it stays a wide, cinematic shape), and the
+   picture fills whatever that turns out to be. Longer German copy therefore
+   makes the card grow instead of overflowing it. */
+@media (min-width: 993px) {
+    .svc-slides {
+        min-height: clamp(440px, 54svh, 545px);
+    }
+
+    .svc-slide-img img {
+        position: absolute;
+        inset: 0;
+        min-height: 0;
+        height: 100%;
+    }
 }
 
 /* A slow settle out of a slight zoom — enough to feel alive on arrival,
@@ -2315,9 +2391,10 @@ body.dark-mode .footer {
 }
 
 /* The slide's own number, set from a CSS counter so no markup carries it.
-   Large, barely-there type in the corner is what stops a panel of body copy
-   from reading as a document — it gives the eye a fixed point and tells the
-   visitor how far through the list they are. */
+   It used to be a 118px ghost figure filling the corner — decoration the eye
+   had to work around, and the loudest thing on a card that is meant to be read.
+   Small, set on the same baseline as the kicker, it still says how far through
+   the list you are without becoming the subject of the panel. */
 .svc-slides {
     counter-reset: svcSlide;
 }
@@ -2329,13 +2406,13 @@ body.dark-mode .footer {
 .svc-slide-content::before {
     content: counter(svcSlide, decimal-leading-zero);
     position: absolute;
-    top: 6px;
-    right: 26px;
-    font-size: 118px;
-    font-weight: 800;
+    top: 38px;
+    right: 38px;
+    font-size: 13px;
+    font-weight: 600;
     line-height: 1;
-    letter-spacing: -4px;
-    color: rgba(255, 255, 255, 0.07);
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.3);
     pointer-events: none;
     user-select: none;
 }
@@ -2350,10 +2427,11 @@ body.dark-mode .footer {
 /* Slide content */
 .svc-slide-content h2 {
     color: #fff;
-    font-size: 36px;
+    font-size: 34px;
+    font-weight: 600;
     margin-bottom: 14px;
     line-height: 1.12;
-    letter-spacing: -0.6px;
+    letter-spacing: -0.5px;
 }
 
 /* The English/technical name was plain grey body text under the title, which
@@ -2371,9 +2449,9 @@ body.dark-mode .footer {
 }
 
 .svc-slide-content>p {
-    color: rgba(255, 255, 255, 0.72);
+    color: rgba(255, 255, 255, 0.66);
     line-height: 1.75;
-    margin-bottom: 22px;
+    margin-bottom: 10px;
     font-size: 15px;
     max-width: 54ch;
 }
@@ -2404,44 +2482,48 @@ body.dark-mode .footer {
     font-style: italic;
 }
 
-/* Detail chips */
+/* Key facts
+   These were four filled, outlined, rounded boxes — four more surfaces stacked
+   on the panel, and the reason the card looked busy before a word of it was
+   read. They are a plain row of facts now, held between two hairlines: the same
+   information, one surface instead of five. */
 .svc-details {
     display: flex;
-    gap: 12px;
+    gap: 12px 26px;
     flex-wrap: wrap;
+    padding: 15px 0;
     margin-bottom: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.09);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.09);
 }
 
 .svc-detail {
     display: flex;
     align-items: center;
     gap: 9px;
-    background: rgba(255, 255, 255, 0.07);
-    padding: 10px 16px;
-    border-radius: 12px;
+    background: none;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.75);
-    border: 1px solid rgba(255, 255, 255, 0.13);
-    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), background 0.35s ease,
-        border-color 0.35s ease;
+    color: rgba(255, 255, 255, 0.58);
+    transition: color 0.35s ease;
 }
 
 .svc-detail:hover {
-    transform: translateY(-3px);
-    background: rgba(255, 255, 255, 0.13);
-    border-color: rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.85);
 }
 
 .svc-detail i {
-    color: var(--primary-light);
-    font-size: 16px;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 14px;
 }
 
 /* The number is the point of the chip — it carries the weight, the label after
    it stays quiet. */
 .svc-detail strong {
     color: #fff;
-    font-weight: 700;
+    font-weight: 600;
 }
 
 /* Features list */
@@ -2457,30 +2539,28 @@ body.dark-mode .footer {
 .svc-features li {
     display: flex;
     align-items: flex-start;
-    gap: 9px;
+    gap: 10px;
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.86);
+    color: rgba(255, 255, 255, 0.78);
     padding-left: 0;
-    line-height: 1.5;
+    line-height: 1.55;
 }
 
 /* Was a bare '✓ ' character in the text flow, which sat on the baseline and
-   left the second line of a wrapped item hanging under the tick. A fixed disc
-   outside the text column keeps every item aligned to the same edge. */
+   left the second line of a wrapped item hanging under the tick. A fixed mark
+   outside the text column keeps every item aligned to the same edge.
+   Four filled orange discs with drop shadows made the list read as four
+   buttons; the tick is drawn in the accent instead of stamped on it. */
 .svc-features li::before {
     content: '✓';
-    flex: 0 0 18px;
+    flex: 0 0 16px;
     height: 18px;
-    margin-top: 2px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 700;
-    color: #fff;
-    background: linear-gradient(135deg, var(--accent-color), #ff8f5e);
-    border-radius: 50%;
-    box-shadow: 0 3px 8px rgba(255, 107, 53, 0.3);
+    color: var(--accent-color);
 }
 
 /* Navigation arrows */
@@ -2494,14 +2574,14 @@ body.dark-mode .footer {
     border-radius: 50%;
     /* Inside the panel now, over the photo: the panel bleeds to its own edge,
        so buttons hanging off the outside had nothing to sit against. */
-    border: 1px solid rgba(255, 255, 255, 0.32);
-    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(20, 23, 27, 0.42);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    color: #fff;
-    font-size: 18px;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 16px;
     cursor: pointer;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
     /* Not `all`: transitioning `transform` here alone keeps the hover scale
        from stuttering against the translateY that centres the button. */
     transition: background 0.3s ease, color 0.3s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
@@ -2524,9 +2604,9 @@ body.dark-mode .footer {
 .svc-next:hover {
     background: #fff;
     border-color: #fff;
-    color: var(--primary-dark);
-    transform: translateY(-50%) scale(1.08);
-    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.4);
+    color: #14171b;
+    transform: translateY(-50%) scale(1.06);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35);
 }
 
 .svc-prev:active,
@@ -3240,16 +3320,17 @@ body.dark-mode .footer {
         padding: 22px 24px 26px;
     }
 
+    /* Stacked, the copy starts at the top of its own box, so the counter would
+       land on the end of the heading. There is no room for it here and nothing
+       is lost — the tab strip already says where you are. */
     .svc-slide-content::before {
-        font-size: 78px;
-        top: -4px;
-        right: 18px;
+        display: none;
     }
 
     .svc-slide-img::after {
         /* Vertical stack: fade the photo into the panel at its foot, not at its
            right edge. */
-        background: linear-gradient(to top, rgba(9, 30, 42, 0.75), rgba(9, 30, 42, 0) 55%);
+        background: linear-gradient(to top, rgba(17, 20, 24, 0.8), rgba(17, 20, 24, 0) 55%);
     }
 
     .svc-dots {
@@ -3874,7 +3955,6 @@ body.dark-mode .footer {
     }
 
     .svc-detail {
-        padding: 8px 12px;
         font-size: 12px;
     }
 
@@ -4407,8 +4487,9 @@ body.dark-mode .iti__country.iti__highlight {
     }
 
     .svc-slide-content h2 span {
-        font-size: 12.5px;
-        margin-top: 3px;
+        font-size: 11px;
+        letter-spacing: 1.8px;
+        margin-top: 5px;
     }
 
     .svc-slide-content>p {
@@ -4418,18 +4499,17 @@ body.dark-mode .iti__country.iti__highlight {
     }
 
     .svc-details {
-        gap: 6px;
+        gap: 6px 16px;
+        padding: 10px 0;
         margin-bottom: 10px;
     }
 
     .svc-detail {
-        padding: 6px 10px;
         font-size: 11px;
-        border-radius: 8px;
     }
 
     .svc-detail i {
-        font-size: 13px;
+        font-size: 12px;
     }
 
     .svc-features {
@@ -4622,12 +4702,12 @@ body.dark-mode .iti__country.iti__highlight {
     }
 
     .svc-details {
-        gap: 5px;
+        gap: 5px 14px;
+        padding: 8px 0;
         margin-bottom: 8px;
     }
 
     .svc-detail {
-        padding: 5px 9px;
         font-size: 10.5px;
     }
 
@@ -5024,17 +5104,17 @@ body.dark-mode .iti__country.iti__highlight {
     }
 
     .svc-details {
-        gap: clamp(5px, 0.9svh, 9px);
+        gap: clamp(5px, 0.9svh, 9px) clamp(14px, 4vw, 22px);
+        padding: clamp(8px, 1.2svh, 14px) 0;
         margin-bottom: clamp(9px, 1.2svh, 14px);
     }
 
     .svc-detail {
-        padding: clamp(6px, 1svh, 10px) clamp(10px, 3vw, 16px);
         font-size: clamp(11px, 1.5svh, 13px);
     }
 
     .svc-detail i {
-        font-size: clamp(13px, 1.9svh, 16px);
+        font-size: clamp(12px, 1.7svh, 14px);
     }
 
     /* Two-up checklist reads as a spec list instead of one long stack. */
@@ -5178,12 +5258,12 @@ body.dark-mode .iti__country.iti__highlight {
     }
 
     .svc-details {
-        gap: 5px;
+        gap: 5px 14px;
+        padding: 8px 0;
         margin-bottom: 8px;
     }
 
     .svc-detail {
-        padding: 5px 9px;
         font-size: 10.5px;
     }
 
@@ -5384,19 +5464,9 @@ body.dark-mode .iti__country.iti__highlight {
         margin-top: clamp(6px, 1svh, 10px);
     }
 
-    .svc-details {
-        padding-top: clamp(2px, 0.6svh, 6px);
-    }
-
-    /* Light tints, from when the panel behind them was white. The panel is dark
-       glass now, so the grouping is done with light-on-dark values instead —
-       same intent, inverted. */
-    .svc-detail {
-        background: rgba(255, 255, 255, 0.08);
-        border-color: rgba(255, 255, 255, 0.14);
-        box-shadow: none;
-    }
-
+    /* The chips this block used to tint are a plain hairline-bounded row now,
+       and that row is itself one of the separators the grouping needed — so the
+       checklist below is the only part still worth putting on its own panel. */
     .svc-features {
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.1);
@@ -5728,17 +5798,21 @@ body.dark-mode {
         font-size: clamp(21px, 3.1svh, 28px);
     }
 
+    /* A kicker set larger than the body copy stops being a kicker. It was
+       running to 16px uppercase in orange — louder than the title it belongs
+       to, and the loudest thing on a phone screen. */
     .svc-slide-content h2 span {
-        font-size: clamp(13px, 1.9svh, 16px);
+        font-size: clamp(10.5px, 1.4svh, 12px);
     }
 
     .svc-details {
+        gap: clamp(8px, 1.2svh, 12px) clamp(16px, 4.5vw, 26px);
+        padding: clamp(10px, 1.6svh, 16px) 0;
         margin-bottom: clamp(12px, 1.9svh, 20px);
     }
 
     .svc-detail {
         font-size: clamp(12px, 1.7svh, 14.5px);
-        padding: clamp(8px, 1.3svh, 13px) clamp(12px, 3.4vw, 18px);
     }
 
     .svc-features li {
@@ -5851,7 +5925,6 @@ body.dark-mode {
 
     .svc-detail {
         font-size: 11.5px;
-        padding: 7px 11px;
     }
 }
 
