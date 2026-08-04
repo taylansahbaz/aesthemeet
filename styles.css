@@ -43,7 +43,16 @@ html {
 @media (min-width: 1025px) {
     html {
         scroll-snap-type: y mandatory;
-        scroll-padding-top: 100px;
+
+        /* Zero, not the header height. `scroll-padding-top: 100px` parked each
+           section 100px down the viewport while the fixed header only covers
+           ~83px of it, so every snap left a sliver of the *previous* section
+           showing in the gap — and pushed the section's own bottom 100px off
+           the screen, so it never sat flush either. The sections are exactly
+           100vh: landing their top edge on the viewport top is what makes them
+           fill the screen. The header overlaps their top padding instead,
+           which is what the padding below is sized for. */
+        scroll-padding-top: 0;
     }
 }
 
@@ -314,7 +323,7 @@ body {
 .hero {
     position: relative;
     height: 100vh;
-    height: 100dvh;
+    height: 100svh;
     min-height: 600px;
     overflow: hidden;
 }
@@ -485,7 +494,16 @@ section:not(.hero) {
 
     section:not(.hero) {
         min-height: 100vh;
-        min-height: 100dvh;
+        min-height: 100svh;
+
+        /* The section now starts at the very top of the viewport, so the fixed
+           header sits over its first 83px. This padding buys that back. 120px
+           = the 100px the snap position used to add + the 20px of padding the
+           individual sections carry, so every heading stays exactly where it
+           was — only the empty strip above it is gone. Wins over the per-
+           section `padding: 20px 0` rules on specificity, and only replaces the
+           top value, so their bottom padding is untouched. */
+        padding-top: 120px;
     }
 }
 
@@ -1291,7 +1309,7 @@ section:not(.hero) {
 .contact-final-section {
     background: #112b3c;
     min-height: 100vh;
-    min-height: 100dvh;
+    min-height: 100svh;
     display: flex;
     align-items: center;
     color: white;
@@ -1567,9 +1585,16 @@ section:not(.hero) {
 
 
 /* ========== RESPONSIVE DESIGN ========== */
+/* `overflow-x: hidden` forces overflow-y to compute to `auto`, which turns
+   <html> (and <body>) into scroll containers of their own instead of letting
+   the viewport scroll the document. That is what makes iOS drop its momentum
+   scrolling and makes a scroll feel like it stops dead. `clip` cuts the same
+   horizontal overflow without touching the vertical axis; `hidden` stays in
+   front of it as the fallback for browsers that don't know `clip`. */
 html,
 body {
     overflow-x: hidden;
+    overflow-x: clip;
 }
 
 body {
@@ -1769,7 +1794,7 @@ svg {
 
     .hero {
         height: 100vh;
-        height: 100dvh;
+        height: 100svh;
         min-height: 460px;
     }
 
@@ -1938,7 +1963,7 @@ body.dark-mode .footer {
 /* ========== SERVICES CAROUSEL OVERLAY ========== */
 .services-carousel-section {
     min-height: 100vh;
-    min-height: 100dvh;
+    min-height: 100svh;
     display: flex;
     align-items: center;
     padding: 120px 0 40px;
@@ -2475,7 +2500,7 @@ body.dark-mode .footer {
 /* ========== RESULTS PAGE (SONUÇLAR) - MARQUEE ========== */
 .marquee-section {
     min-height: 100vh;
-    min-height: 100dvh;
+    min-height: 100svh;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -3073,8 +3098,10 @@ body.dark-mode .footer {
         padding: 10px 0 20px;
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         z-index: 999;
-        /* Must scroll on short screens instead of running off the bottom. */
-        max-height: calc(100dvh - 80px);
+        /* Must scroll on short screens instead of running off the bottom.
+           The header hangs below the status bar inset, so the menu starts that
+           much lower and has that much less room. */
+        max-height: calc(100svh - 80px - env(safe-area-inset-top));
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
         overscroll-behavior: contain;
@@ -3330,8 +3357,22 @@ body.dark-mode .footer {
    a clearer affordance than an arrow covering the text. */
 @media (max-width: 500px) {
 
+    /* The card used to be 86% of the row and snap to its left edge, so it sat
+       flush against the left gutter with all 14% of the slack showing on the
+       right — it read as badly aligned rather than as a carousel. The card now
+       takes the full row and the row carries an equal gutter on both sides, so
+       the card is centred and the next one peeks by the same amount at either
+       edge. `scroll-snap-align: center` keeps every following card centred too. */
     .testimonials-slider {
-        grid-auto-columns: 86%;
+        grid-auto-columns: 100%;
+        padding-left: 7%;
+        padding-right: 7%;
+        scroll-padding-left: 7%;
+        scroll-padding-right: 7%;
+    }
+
+    .testimonial-card {
+        scroll-snap-align: center;
     }
 
     .testimonials-prev,
@@ -3461,7 +3502,7 @@ body.dark-mode .footer {
     }
 
     .navbar {
-        max-height: calc(100dvh - 64px);
+        max-height: calc(100svh - 64px - env(safe-area-inset-top));
     }
 
     .glass-img-wrapper {
@@ -3549,7 +3590,8 @@ body.dark-mode .iti__country.iti__highlight {
    ONE SCREEN PER SECTION — MOBILE & TABLET
    The site's core idea is that each section is its own screen. Below 1025px
    the content was several viewports tall, so this block compacts each section
-   to fit 100dvh and turns snapping back on.
+   to fit 100svh. Snapping stays OFF here — the layout gives the one-screen
+   rhythm, the browser is left to scroll normally.
 
    Budget per section at 375x667: 667 - 72 (top pad, clears the fixed header)
    - 20 (bottom pad) = ~575px of usable content.
@@ -3558,28 +3600,31 @@ body.dark-mode .iti__country.iti__highlight {
 @media (max-width: 1024px) {
 
     html {
-        /* `mandatory`, now that every panel is verified to fit one screen.
-           `proximity` only engaged near a boundary, so a slow drag or a small
-           correction left the page resting mid-section — the section below
-           hanging half off the bottom, and a jittery feel when nudging back up. */
-        scroll-snap-type: y mandatory;
-        scroll-padding-top: 0;
+        /* NO vertical snapping on touch devices. `mandatory` snapping is the
+           single biggest source of the "screen fights back / freezes" feel on
+           phones: scrolling up re-shows the browser's address bar, which
+           changes the viewport height, which resizes every 100svh panel, and
+           the snap engine then yanks the page to the nearest boundary
+           mid-gesture. Momentum scrolling and snap correction end up pulling
+           in opposite directions. Sections still fill a screen each — they
+           just aren't forced to. */
+        scroll-snap-type: none;
+        /* Clears the header, which now sits below the status bar inset. */
+        scroll-padding-top: calc(72px + env(safe-area-inset-top));
 
-        /* Anchor links call scrollTo({behavior:'smooth'}) themselves. Leaving
-           smooth on here too made the browser animate every snap correction,
-           which is what made fine adjustments feel like they were fighting back. */
+        /* Anchor links call scrollTo({behavior:'smooth'}) themselves, so the
+           document doesn't need to animate anything on its own. */
         scroll-behavior: auto;
     }
 
     .hero,
     section:not(.hero) {
-        scroll-snap-align: start;
-        /* Land on every panel instead of flying past one on a fast swipe. */
-        scroll-snap-stop: always;
+        scroll-snap-align: none;
+        scroll-snap-stop: normal;
     }
 
     section:not(.hero) {
-        min-height: 100dvh;
+        min-height: 100svh;
         padding: 72px 0 20px;
         justify-content: center;
         /* `safe` falls back to flex-start rather than overflowing off the top
@@ -3716,13 +3761,14 @@ body.dark-mode .iti__country.iti__highlight {
         line-height: 1.3;
     }
 
-    /* --- FAQ: keep the photo, but as a banner rather than a half-screen block. --- */
+    /* --- FAQ: the photo is a wide banner here rather than a half-screen block,
+       but tall enough that the room in it is actually readable. --- */
     .faq-layout {
         gap: 16px;
     }
 
     .faq-image {
-        height: 120px;
+        height: 200px;
         max-width: 100%;
     }
 
@@ -3766,7 +3812,7 @@ body.dark-mode .iti__country.iti__highlight {
     }
 
     .glass-img-wrapper {
-        height: min(46dvh, 340px);
+        height: min(46svh, 340px);
     }
 
     .glass-info h3 {
@@ -3800,14 +3846,13 @@ body.dark-mode .iti__country.iti__highlight {
     }
 
     /* --- Contact: info + map + form genuinely cannot share one screen, so the
-       two halves become two snap panels instead of one oversized section. --- */
+       two halves become two separate full-height panels. --- */
     /* Needs the element qualifier to outrank `section:not(.hero)` above,
-       otherwise the section keeps its own 72px top padding and shunts both
-       contact panels 72px past their snap positions. */
+       otherwise the section keeps its own 72px top padding and pushes both
+       contact panels 72px down. */
     section.contact-final-section {
         min-height: 0;
         padding: 0;
-        /* Its two halves are the snap targets now, not the section itself. */
         scroll-snap-align: none;
     }
 
@@ -3817,13 +3862,12 @@ body.dark-mode .iti__country.iti__highlight {
 
     .cfs-left,
     .cfs-right {
-        min-height: 100dvh;
+        min-height: 100svh;
         display: flex;
         flex-direction: column;
         justify-content: center;
         justify-content: safe center;
-        scroll-snap-align: start;
-        scroll-snap-stop: always;
+        scroll-snap-align: none;
         padding: 72px 0 20px;
     }
 
@@ -4209,81 +4253,88 @@ body.dark-mode .iti__country.iti__highlight {
    FILL THE SCREEN — MOBILE TYPE & RHYTHM SCALE
    Sizing each section to the *shortest* phone left tall phones with a small
    block of tiny text marooned in the middle of the viewport. Everything below
-   scales with dvh: the clamp minimum is the value proven to fit a 667px-tall
+   scales with svh: the clamp minimum is the value proven to fit a 667px-tall
    screen, and it grows from there so an 844px screen actually gets filled.
-   dvh is only ever the middle term, so a browser without dvh support simply
+   svh is only ever the middle term, so a browser without svh support simply
    keeps the compact value.
+
+   svh, never dvh. dvh tracks the *current* viewport, so it changes the moment
+   the browser's address bar slides in or out — which happens mid-scroll, and
+   mostly when scrolling back up. Every font size, padding and section height
+   below would then be recalculated and the whole page relaid out during the
+   gesture: the stutter/freeze the site had on phones. svh is a fixed number
+   for the session, so scrolling never triggers a reflow.
    ========================================================================== */
 
 @media (max-width: 900px) {
 
     /* --- Shared section rhythm --- */
     section:not(.hero) {
-        padding-top: clamp(72px, 10dvh, 104px);
-        padding-bottom: clamp(20px, 4dvh, 44px);
+        padding-top: clamp(72px, 10svh, 104px);
+        padding-bottom: clamp(20px, 4svh, 44px);
     }
 
     .section-header {
-        margin-bottom: clamp(20px, 3.6dvh, 42px);
+        margin-bottom: clamp(20px, 3.6svh, 42px);
     }
 
     .section-header h2,
     .results-glass .section-title {
-        font-size: clamp(23px, 3.5dvh, 33px);
-        margin-bottom: clamp(8px, 1.4dvh, 16px);
+        font-size: clamp(23px, 3.5svh, 33px);
+        margin-bottom: clamp(8px, 1.4svh, 16px);
     }
 
     .section-header p {
-        font-size: clamp(14px, 2dvh, 17px);
+        font-size: clamp(14px, 2svh, 17px);
     }
 
     .section-footer {
-        margin-top: clamp(18px, 3.2dvh, 38px) !important;
+        margin-top: clamp(18px, 3.2svh, 38px) !important;
     }
 
     .btn-large {
-        padding: clamp(12px, 1.8dvh, 17px) clamp(26px, 5vw, 38px);
-        font-size: clamp(15px, 2.1dvh, 17px);
+        padding: clamp(12px, 1.8svh, 17px) clamp(26px, 5vw, 38px);
+        font-size: clamp(15px, 2.1svh, 17px);
     }
 
     /* --- Services cards --- */
     .services-grid {
-        gap: clamp(14px, 2dvh, 20px);
+        gap: clamp(14px, 2svh, 20px);
     }
 
     .service-image {
-        height: clamp(150px, 22dvh, 230px);
+        height: clamp(150px, 22svh, 230px);
     }
 
     .service-info {
-        padding: clamp(14px, 2.2dvh, 22px) clamp(16px, 4vw, 22px);
+        padding: clamp(14px, 2.2svh, 22px) clamp(16px, 4vw, 22px);
     }
 
     .service-info h3 {
-        font-size: clamp(17px, 2.5dvh, 21px);
-        margin-bottom: clamp(6px, 1dvh, 10px);
+        font-size: clamp(17px, 2.5svh, 21px);
+        margin-bottom: clamp(6px, 1svh, 10px);
     }
 
     .service-info p {
-        font-size: clamp(13.5px, 1.9dvh, 15.5px);
+        font-size: clamp(13.5px, 1.9svh, 15.5px);
         line-height: 1.55;
     }
 
     .service-info>div[style] {
-        margin-top: clamp(8px, 1.4dvh, 14px) !important;
-        font-size: clamp(13px, 1.8dvh, 15px) !important;
+        margin-top: clamp(8px, 1.4svh, 14px) !important;
+        font-size: clamp(13px, 1.8svh, 15px) !important;
     }
 
     /* --- Why us: the icon now sits in a soft badge, matching the process
        steps on the services page, so the block reads as three cards rather
        than a wall of small print. --- */
     .features-grid {
-        gap: clamp(10px, 1.8dvh, 18px);
+        gap: clamp(10px, 1.8svh, 18px);
     }
 
     .feature-item,
     .stat-item {
-        padding: clamp(16px, 2.6dvh, 26px) clamp(8px, 2.5vw, 14px);
+        padding: clamp(16px, 2.6svh, 26px) clamp(8px, 2.5vw, 14px);
         border-radius: 14px;
     }
 
@@ -4291,143 +4342,143 @@ body.dark-mode .iti__country.iti__highlight {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: clamp(44px, 6.6dvh, 62px);
-        height: clamp(44px, 6.6dvh, 62px);
-        margin: 0 auto clamp(10px, 1.8dvh, 16px);
+        width: clamp(44px, 6.6svh, 62px);
+        height: clamp(44px, 6.6svh, 62px);
+        margin: 0 auto clamp(10px, 1.8svh, 16px);
         border-radius: 50%;
         background: linear-gradient(135deg, rgba(26, 95, 122, 0.12), rgba(26, 95, 122, 0.05));
-        font-size: clamp(19px, 2.9dvh, 27px);
+        font-size: clamp(19px, 2.9svh, 27px);
     }
 
     .feature-item h3 {
-        font-size: clamp(13px, 1.95dvh, 16.5px);
-        margin-bottom: clamp(4px, 0.8dvh, 8px);
+        font-size: clamp(13px, 1.95svh, 16.5px);
+        margin-bottom: clamp(4px, 0.8svh, 8px);
         line-height: 1.3;
     }
 
     .feature-item p {
-        font-size: clamp(11px, 1.65dvh, 13.5px);
+        font-size: clamp(11px, 1.65svh, 13.5px);
         line-height: 1.45;
     }
 
     .stat-number {
-        font-size: clamp(26px, 4.6dvh, 46px);
+        font-size: clamp(26px, 4.6svh, 46px);
     }
 
     .stat-plus {
-        font-size: clamp(18px, 3.2dvh, 32px);
+        font-size: clamp(18px, 3.2svh, 32px);
     }
 
     .stat-label {
-        font-size: clamp(11px, 1.7dvh, 14px);
+        font-size: clamp(11px, 1.7svh, 14px);
         line-height: 1.35;
     }
 
     .stat-number-wrapper {
-        margin-bottom: clamp(4px, 0.9dvh, 9px);
+        margin-bottom: clamp(4px, 0.9svh, 9px);
     }
 
     /* --- FAQ --- */
     .faq-layout {
-        gap: clamp(16px, 2.6dvh, 30px);
+        gap: clamp(16px, 2.6svh, 30px);
     }
 
     .faq-image {
-        height: clamp(120px, 19dvh, 210px);
+        height: clamp(200px, 29svh, 330px);
     }
 
     .faq-question {
-        padding: clamp(11px, 1.9dvh, 19px) 0;
+        padding: clamp(11px, 1.9svh, 19px) 0;
     }
 
     .faq-question h4 {
-        font-size: clamp(14.5px, 2.1dvh, 17.5px);
+        font-size: clamp(14.5px, 2.1svh, 17.5px);
         line-height: 1.4;
     }
 
     .faq-toggle {
-        font-size: clamp(20px, 2.8dvh, 26px);
+        font-size: clamp(20px, 2.8svh, 26px);
     }
 
     .faq-answer p {
-        font-size: clamp(13px, 1.85dvh, 15.5px);
+        font-size: clamp(13px, 1.85svh, 15.5px);
     }
 
     /* --- Results carousel --- */
     .glass-card {
-        padding: clamp(10px, 1.6dvh, 16px);
-        gap: clamp(8px, 1.6dvh, 16px);
+        padding: clamp(10px, 1.6svh, 16px);
+        gap: clamp(8px, 1.6svh, 16px);
     }
 
     .glass-img-wrapper {
-        height: clamp(240px, 42dvh, 420px);
+        height: clamp(240px, 42svh, 420px);
     }
 
     .glass-info h3 {
-        font-size: clamp(15px, 2.3dvh, 20px);
-        margin-bottom: clamp(6px, 1.1dvh, 11px);
-        padding-bottom: clamp(6px, 1dvh, 10px);
+        font-size: clamp(15px, 2.3svh, 20px);
+        margin-bottom: clamp(6px, 1.1svh, 11px);
+        padding-bottom: clamp(6px, 1svh, 10px);
     }
 
     .glass-info p {
-        font-size: clamp(12.5px, 1.85dvh, 15.5px);
+        font-size: clamp(12.5px, 1.85svh, 15.5px);
         line-height: 1.55;
     }
 
     /* --- Testimonials --- */
     .testimonial-card {
-        padding: clamp(18px, 3dvh, 30px);
+        padding: clamp(18px, 3svh, 30px);
     }
 
     .testimonial-header {
-        margin-bottom: clamp(12px, 2.2dvh, 22px);
+        margin-bottom: clamp(12px, 2.2svh, 22px);
         gap: clamp(12px, 2vw, 18px);
     }
 
     .author-img {
-        width: clamp(50px, 7dvh, 66px);
-        height: clamp(50px, 7dvh, 66px);
+        width: clamp(50px, 7svh, 66px);
+        height: clamp(50px, 7svh, 66px);
     }
 
     .testimonial-author strong {
-        font-size: clamp(16px, 2.2dvh, 19px);
+        font-size: clamp(16px, 2.2svh, 19px);
     }
 
     .testimonial-author span {
-        font-size: clamp(13px, 1.8dvh, 15px);
+        font-size: clamp(13px, 1.8svh, 15px);
     }
 
     .stars {
-        font-size: clamp(15px, 2.2dvh, 19px);
+        font-size: clamp(15px, 2.2svh, 19px);
         margin-bottom: 0;
     }
 
     .testimonial-text {
-        font-size: clamp(13.5px, 2dvh, 16.5px);
+        font-size: clamp(13.5px, 2svh, 16.5px);
         line-height: 1.7;
     }
 
     /* --- Results page marquee --- */
     .marquee-header {
-        margin-bottom: clamp(12px, 2.6dvh, 30px);
+        margin-bottom: clamp(12px, 2.6svh, 30px);
     }
 
     .marquee-track {
-        gap: clamp(16px, 2.4dvh, 26px);
+        gap: clamp(16px, 2.4svh, 26px);
     }
 
     .marquee-item {
-        width: min(62vw, clamp(240px, 34dvh, 320px));
-        padding: clamp(10px, 1.6dvh, 15px);
-        gap: clamp(8px, 1.4dvh, 14px);
+        width: min(62vw, clamp(240px, 34svh, 320px));
+        padding: clamp(10px, 1.6svh, 15px);
+        gap: clamp(8px, 1.4svh, 14px);
     }
 
     .mq-info h4 {
-        font-size: clamp(15px, 2.2dvh, 18px);
+        font-size: clamp(15px, 2.2svh, 18px);
     }
 
     .mq-info span {
-        font-size: clamp(11.5px, 1.7dvh, 13.5px);
+        font-size: clamp(11.5px, 1.7svh, 13.5px);
     }
 }
 
@@ -4437,23 +4488,23 @@ body.dark-mode .iti__country.iti__highlight {
     /* --- Contact panels --- */
     .cfs-left,
     .cfs-right {
-        padding-top: clamp(72px, 10dvh, 104px);
-        padding-bottom: clamp(20px, 4dvh, 44px);
+        padding-top: clamp(72px, 10svh, 104px);
+        padding-bottom: clamp(20px, 4svh, 44px);
     }
 
     .cfs-left h2 {
-        font-size: clamp(24px, 3.6dvh, 34px);
-        margin-bottom: clamp(10px, 1.7dvh, 18px);
+        font-size: clamp(24px, 3.6svh, 34px);
+        margin-bottom: clamp(10px, 1.7svh, 18px);
     }
 
     .cfs-left p {
-        font-size: clamp(14px, 1.9dvh, 16.5px);
-        margin-bottom: clamp(18px, 2.6dvh, 30px);
+        font-size: clamp(14px, 1.9svh, 16.5px);
+        margin-bottom: clamp(18px, 2.6svh, 30px);
     }
 
     .cfs-info-group {
-        gap: clamp(14px, 2.1dvh, 24px);
-        margin-bottom: clamp(18px, 2.6dvh, 30px);
+        gap: clamp(14px, 2.1svh, 24px);
+        margin-bottom: clamp(18px, 2.6svh, 30px);
     }
 
     .cfs-info-item {
@@ -4461,60 +4512,60 @@ body.dark-mode .iti__country.iti__highlight {
     }
 
     .cfs-icon {
-        font-size: clamp(19px, 2.8dvh, 25px);
-        width: clamp(20px, 2.9dvh, 26px);
+        font-size: clamp(19px, 2.8svh, 25px);
+        width: clamp(20px, 2.9svh, 26px);
     }
 
     .cfs-text h4 {
-        font-size: clamp(14px, 2dvh, 17px);
-        margin-bottom: clamp(2px, 0.5dvh, 5px);
+        font-size: clamp(14px, 2svh, 17px);
+        margin-bottom: clamp(2px, 0.5svh, 5px);
     }
 
     .cfs-text p {
-        font-size: clamp(13px, 1.9dvh, 16px);
+        font-size: clamp(13px, 1.9svh, 16px);
     }
 
     .cfs-map {
-        height: clamp(130px, 16dvh, 200px);
-        margin-bottom: clamp(16px, 2.2dvh, 26px);
+        height: clamp(130px, 16svh, 200px);
+        margin-bottom: clamp(16px, 2.2svh, 26px);
     }
 
     .cfs-copyright {
-        padding-top: clamp(12px, 2dvh, 20px);
-        font-size: clamp(12px, 1.7dvh, 14px);
+        padding-top: clamp(12px, 2svh, 20px);
+        font-size: clamp(12px, 1.7svh, 14px);
     }
 
     .cfs-form-card {
-        padding: clamp(20px, 3.2dvh, 34px) clamp(16px, 4.5vw, 28px);
+        padding: clamp(20px, 3.2svh, 34px) clamp(16px, 4.5vw, 28px);
     }
 
     .cfs-form-card h3 {
-        font-size: clamp(18px, 2.9dvh, 25px);
-        margin-bottom: clamp(16px, 2.8dvh, 30px);
+        font-size: clamp(18px, 2.9svh, 25px);
+        margin-bottom: clamp(16px, 2.8svh, 30px);
     }
 
     .cfs-form-card form {
-        gap: clamp(12px, 2.1dvh, 20px);
+        gap: clamp(12px, 2.1svh, 20px);
     }
 
     .cfs-form-row {
-        gap: clamp(12px, 2.1dvh, 20px);
+        gap: clamp(12px, 2.1svh, 20px);
     }
 
     .cfs-form-card input,
     .cfs-form-card textarea {
-        padding: clamp(12px, 1.9dvh, 17px) clamp(14px, 4vw, 20px);
+        padding: clamp(12px, 1.9svh, 17px) clamp(14px, 4vw, 20px);
     }
 
     .cfs-form-card textarea {
-        min-height: clamp(84px, 14dvh, 150px);
-        height: clamp(84px, 14dvh, 150px);
+        min-height: clamp(84px, 14svh, 150px);
+        height: clamp(84px, 14svh, 150px);
     }
 
     .btn-submit-icon {
-        margin-top: clamp(4px, 0.8dvh, 10px);
-        padding: clamp(12px, 1.9dvh, 17px) 22px;
-        font-size: clamp(14px, 1.9dvh, 16px);
+        margin-top: clamp(4px, 0.8svh, 10px);
+        padding: clamp(12px, 1.9svh, 17px) 22px;
+        font-size: clamp(14px, 1.9svh, 16px);
     }
 
     /* --- Services page: technique slides -----------------------------------
@@ -4522,121 +4573,121 @@ body.dark-mode .iti__country.iti__highlight {
        four-item checklist all at 11-12px. Bigger type plus real separation
        between the three groups makes it scan as sections, not a text wall. --- */
     .glass-panel {
-        padding: clamp(14px, 1.8dvh, 22px) clamp(12px, 3.5vw, 24px);
+        padding: clamp(14px, 1.8svh, 22px) clamp(12px, 3.5vw, 24px);
     }
 
     .svc-dots {
-        margin-bottom: clamp(11px, 1.4dvh, 17px);
+        margin-bottom: clamp(11px, 1.4svh, 17px);
         gap: clamp(6px, 1.4vw, 10px);
     }
 
     .svc-dot {
-        padding: clamp(8px, 1.4dvh, 13px) clamp(14px, 4vw, 22px);
-        font-size: clamp(12.5px, 1.8dvh, 15px);
+        padding: clamp(8px, 1.4svh, 13px) clamp(14px, 4vw, 22px);
+        font-size: clamp(12.5px, 1.8svh, 15px);
     }
 
     .svc-slide {
-        gap: clamp(12px, 1.6dvh, 20px);
+        gap: clamp(12px, 1.6svh, 20px);
     }
 
     .svc-slide-img img {
-        height: clamp(112px, 12.5dvh, 165px);
+        height: clamp(112px, 12.5svh, 165px);
     }
 
     .svc-slide-content h2 {
-        font-size: clamp(19px, 2.9dvh, 26px);
-        margin-bottom: clamp(4px, 0.8dvh, 8px);
+        font-size: clamp(19px, 2.9svh, 26px);
+        margin-bottom: clamp(4px, 0.8svh, 8px);
     }
 
     .svc-slide-content h2 span {
-        font-size: clamp(12.5px, 1.8dvh, 15px);
+        font-size: clamp(12.5px, 1.8svh, 15px);
     }
 
     .svc-slide-content>p {
-        font-size: clamp(12.5px, 1.5dvh, 14px);
+        font-size: clamp(12.5px, 1.5svh, 14px);
         line-height: 1.5;
-        margin-bottom: clamp(9px, 1.2dvh, 14px);
+        margin-bottom: clamp(9px, 1.2svh, 14px);
     }
 
     .svc-details {
-        gap: clamp(5px, 0.9dvh, 9px);
-        margin-bottom: clamp(9px, 1.2dvh, 14px);
+        gap: clamp(5px, 0.9svh, 9px);
+        margin-bottom: clamp(9px, 1.2svh, 14px);
     }
 
     .svc-detail {
-        padding: clamp(6px, 1dvh, 10px) clamp(10px, 3vw, 16px);
-        font-size: clamp(11px, 1.5dvh, 13px);
+        padding: clamp(6px, 1svh, 10px) clamp(10px, 3vw, 16px);
+        font-size: clamp(11px, 1.5svh, 13px);
     }
 
     .svc-detail i {
-        font-size: clamp(13px, 1.9dvh, 16px);
+        font-size: clamp(13px, 1.9svh, 16px);
     }
 
     /* Two-up checklist reads as a spec list instead of one long stack. */
     .svc-features {
         display: grid;
         grid-template-columns: 1fr;
-        gap: clamp(3px, 0.6dvh, 6px);
+        gap: clamp(3px, 0.6svh, 6px);
     }
 
     .svc-features li {
-        font-size: clamp(12px, 1.45dvh, 13.5px);
+        font-size: clamp(12px, 1.45svh, 13.5px);
         line-height: 1.4;
     }
 
     /* --- Services page: comparison table --- */
     .comparison-table th {
-        padding: clamp(9px, 1.6dvh, 16px) 4px;
-        font-size: clamp(11.5px, 1.75dvh, 14.5px);
+        padding: clamp(9px, 1.6svh, 16px) 4px;
+        font-size: clamp(11.5px, 1.75svh, 14.5px);
     }
 
     .comparison-table td {
-        padding: clamp(9px, 1.6dvh, 16px) 4px;
-        font-size: clamp(11.5px, 1.75dvh, 14.5px);
+        padding: clamp(9px, 1.6svh, 16px) 4px;
+        font-size: clamp(11.5px, 1.75svh, 14.5px);
     }
 
     .comparison-table td .fa-star {
-        font-size: clamp(8px, 1.25dvh, 12px);
+        font-size: clamp(8px, 1.25svh, 12px);
     }
 
     /* --- Services page: process list --- */
     /* Five cards repeat, so each one's growth is divided by five — gentle
        coefficients here, or the list outruns the viewport it grows into. */
     .process-grid {
-        gap: clamp(8px, 1.1dvh, 14px);
+        gap: clamp(8px, 1.1svh, 14px);
     }
 
     .process-card {
-        grid-template-columns: clamp(44px, 4.8dvh, 56px) 1fr;
+        grid-template-columns: clamp(44px, 4.8svh, 56px) 1fr;
         column-gap: clamp(12px, 3.5vw, 18px);
-        padding: clamp(11px, 1.4dvh, 17px) clamp(14px, 4vw, 20px);
+        padding: clamp(11px, 1.4svh, 17px) clamp(14px, 4vw, 20px);
     }
 
     .process-icon {
-        width: clamp(44px, 4.8dvh, 56px);
-        height: clamp(44px, 4.8dvh, 56px);
-        font-size: clamp(17px, 2dvh, 22px);
+        width: clamp(44px, 4.8svh, 56px);
+        height: clamp(44px, 4.8svh, 56px);
+        font-size: clamp(17px, 2svh, 22px);
     }
 
     .process-card h3 {
-        font-size: clamp(14px, 1.85dvh, 16.5px);
-        margin-bottom: clamp(1px, 0.4dvh, 4px);
+        font-size: clamp(14px, 1.85svh, 16.5px);
+        margin-bottom: clamp(1px, 0.4svh, 4px);
     }
 
     .process-card p {
-        font-size: clamp(11.5px, 1.5dvh, 13.5px);
+        font-size: clamp(11.5px, 1.5svh, 13.5px);
         line-height: 1.4;
     }
 
     .process-step {
-        font-size: clamp(40px, 6.5dvh, 66px);
+        font-size: clamp(40px, 6.5svh, 66px);
     }
 }
 
 
 /* ==========================================================================
    DENSE-SECTION CORRECTIONS — must stay last
-   These re-tighten the two heaviest blocks after the dvh scale above. They
+   These re-tighten the two heaviest blocks after the svh scale above. They
    have to sit at the end of the file: the scale block and these share the
    same specificity, so source order is what decides.
    ========================================================================== */
@@ -4646,22 +4697,22 @@ body.dark-mode .iti__country.iti__highlight {
 @media (max-width: 900px) {
 
     .process-card {
-        padding: clamp(10px, 1.1dvh, 15px) clamp(12px, 4vw, 20px);
+        padding: clamp(10px, 1.1svh, 15px) clamp(12px, 4vw, 20px);
     }
 
     .process-card p {
-        font-size: clamp(11px, 1.4dvh, 13px);
+        font-size: clamp(11px, 1.4svh, 13px);
         line-height: 1.35;
     }
 
     .process-icon {
-        width: clamp(40px, 4.4dvh, 52px);
-        height: clamp(40px, 4.4dvh, 52px);
-        font-size: clamp(16px, 1.9dvh, 21px);
+        width: clamp(40px, 4.4svh, 52px);
+        height: clamp(40px, 4.4svh, 52px);
+        font-size: clamp(16px, 1.9svh, 21px);
     }
 
     .process-card {
-        grid-template-columns: clamp(40px, 4.4dvh, 52px) 1fr;
+        grid-template-columns: clamp(40px, 4.4svh, 52px) 1fr;
     }
 }
 
@@ -4781,111 +4832,113 @@ body.dark-mode .iti__country.iti__highlight {
     /* --- Why us --- */
     .feature-item,
     .stat-item {
-        padding: clamp(18px, 2.7dvh, 30px) clamp(8px, 2.5vw, 16px);
+        padding: clamp(18px, 2.7svh, 30px) clamp(8px, 2.5vw, 16px);
     }
 
     .feature-icon {
-        width: clamp(48px, 6.4dvh, 70px);
-        height: clamp(48px, 6.4dvh, 70px);
-        margin-bottom: clamp(12px, 1.8dvh, 18px);
-        font-size: clamp(21px, 2.9dvh, 31px);
+        width: clamp(48px, 6.4svh, 70px);
+        height: clamp(48px, 6.4svh, 70px);
+        margin-bottom: clamp(12px, 1.8svh, 18px);
+        font-size: clamp(21px, 2.9svh, 31px);
     }
 
     .feature-item h3 {
-        font-size: clamp(14px, 2.2dvh, 18px);
-        margin-bottom: clamp(5px, 1dvh, 10px);
+        font-size: clamp(14px, 2.2svh, 18px);
+        margin-bottom: clamp(5px, 1svh, 10px);
     }
 
     .feature-item p {
-        font-size: clamp(11.5px, 1.65dvh, 14px);
+        font-size: clamp(11.5px, 1.65svh, 14px);
         line-height: 1.45;
     }
 
     .stat-number {
-        font-size: clamp(30px, 5.4dvh, 54px);
+        font-size: clamp(30px, 5.4svh, 54px);
     }
 
     .stat-plus {
-        font-size: clamp(20px, 3.7dvh, 37px);
+        font-size: clamp(20px, 3.7svh, 37px);
     }
 
     .stat-label {
-        font-size: clamp(11.5px, 1.9dvh, 15px);
+        font-size: clamp(11.5px, 1.9svh, 15px);
     }
 
     .features-grid {
-        gap: clamp(11px, 2.1dvh, 22px);
+        gap: clamp(11px, 2.1svh, 22px);
     }
 
     /* --- Testimonials: one short quote floating in a tall screen looked like a
        mistake. Give the card real presence and centre the quote inside it. --- */
     .testimonial-card {
-        min-height: clamp(300px, 46dvh, 520px);
+        min-height: clamp(300px, 46svh, 520px);
         justify-content: center;
-        padding: clamp(20px, 3.6dvh, 40px) clamp(20px, 5.5vw, 34px);
+        padding: clamp(20px, 3.6svh, 40px) clamp(20px, 5.5vw, 34px);
     }
 
     .testimonial-text {
-        font-size: clamp(14px, 2.2dvh, 18.5px);
+        font-size: clamp(14px, 2.2svh, 18.5px);
         line-height: 1.75;
     }
 
     .testimonial-header {
-        margin-bottom: clamp(14px, 2.8dvh, 28px);
+        margin-bottom: clamp(14px, 2.8svh, 28px);
     }
 
     .author-img {
-        width: clamp(54px, 8dvh, 76px);
-        height: clamp(54px, 8dvh, 76px);
+        width: clamp(54px, 8svh, 76px);
+        height: clamp(54px, 8svh, 76px);
     }
 
-    /* --- FAQ --- */
+    /* --- FAQ ---
+       The photo was squeezed to a thin banner back when the section had to fit
+       inside a single snapped screen. Snapping is gone, so it can breathe. */
     .faq-image {
-        height: clamp(140px, 18dvh, 240px);
+        height: clamp(200px, 29svh, 330px);
     }
 
     .faq-question {
-        padding: clamp(13px, 1.8dvh, 20px) 0;
+        padding: clamp(13px, 1.8svh, 20px) 0;
     }
 
     .faq-question h4 {
-        font-size: clamp(15px, 2.05dvh, 18px);
+        font-size: clamp(15px, 2.05svh, 18px);
     }
 
     /* --- Services cards --- */
     .service-image {
-        height: clamp(165px, 26dvh, 280px);
+        height: clamp(165px, 26svh, 280px);
     }
 
     .service-info {
-        padding: clamp(16px, 2.8dvh, 28px) clamp(16px, 4.5vw, 24px);
+        padding: clamp(16px, 2.8svh, 28px) clamp(16px, 4.5vw, 24px);
     }
 
     .service-info h3 {
-        font-size: clamp(18px, 2.7dvh, 23px);
+        font-size: clamp(18px, 2.7svh, 23px);
     }
 
     .service-info p {
-        font-size: clamp(14px, 2.05dvh, 16.5px);
+        font-size: clamp(14px, 2.05svh, 16.5px);
     }
 
     /* --- Contact form --- */
     .cfs-form-card textarea {
-        min-height: clamp(96px, 17dvh, 190px);
-        height: clamp(96px, 17dvh, 190px);
+        min-height: clamp(96px, 17svh, 190px);
+        height: clamp(96px, 17svh, 190px);
     }
 
     .cfs-form-card input,
     .cfs-form-card textarea {
-        padding: clamp(13px, 2.2dvh, 20px) clamp(14px, 4vw, 22px);
+        padding: clamp(13px, 2.2svh, 20px) clamp(14px, 4vw, 22px);
     }
 
     .cfs-form-card form {
-        gap: clamp(13px, 2.4dvh, 24px);
+        gap: clamp(13px, 2.4svh, 24px);
     }
 
     .cfs-form-row {
-        gap: clamp(13px, 2.4dvh, 24px);
+        gap: clamp(13px, 2.4svh, 24px);
     }
 }
 
@@ -4902,7 +4955,7 @@ body.dark-mode .iti__country.iti__highlight {
 
     .svc-slide-content h2 {
         position: relative;
-        padding-bottom: clamp(7px, 1.2dvh, 12px);
+        padding-bottom: clamp(7px, 1.2svh, 12px);
     }
 
     .svc-slide-content h2::after {
@@ -4918,11 +4971,11 @@ body.dark-mode .iti__country.iti__highlight {
 
     .svc-slide-content h2 span {
         /* Sits under the rule rather than between the title and it. */
-        margin-top: clamp(6px, 1dvh, 10px);
+        margin-top: clamp(6px, 1svh, 10px);
     }
 
     .svc-details {
-        padding-top: clamp(2px, 0.6dvh, 6px);
+        padding-top: clamp(2px, 0.6svh, 6px);
     }
 
     .svc-detail {
@@ -4935,7 +4988,7 @@ body.dark-mode .iti__country.iti__highlight {
         background: rgba(26, 95, 122, 0.055);
         border: 1px solid rgba(26, 95, 122, 0.09);
         border-radius: 12px;
-        padding: clamp(10px, 1.6dvh, 16px) clamp(12px, 3.5vw, 18px);
+        padding: clamp(10px, 1.6svh, 16px) clamp(12px, 3.5vw, 18px);
     }
 }
 
@@ -4983,11 +5036,11 @@ body.dark-mode .iti__country.iti__highlight {
        four rows do not fit a 667px screen. */
 
     .feature-item h3 {
-        font-size: clamp(14.5px, 2dvh, 17.5px);
+        font-size: clamp(14.5px, 2svh, 17.5px);
     }
 
     .feature-item p {
-        font-size: clamp(12px, 1.6dvh, 14.5px);
+        font-size: clamp(12px, 1.6svh, 14.5px);
         line-height: 1.45;
         /* Room to wrap normally now, so stop breaking words apart. */
         overflow-wrap: normal;
@@ -5000,36 +5053,36 @@ body.dark-mode .iti__country.iti__highlight {
         hyphens: manual;
     }
 
-    /* Sized against width as well as height — a 5.4dvh figure is fine on a
+    /* Sized against width as well as height — a 5.4svh figure is fine on a
        tall screen but far too wide for a half-width card at 344px. */
     .stat-number {
-        font-size: clamp(28px, min(5dvh, 10.5vw), 52px);
+        font-size: clamp(28px, min(5svh, 10.5vw), 52px);
     }
 
     .stat-plus {
-        font-size: clamp(19px, min(3.4dvh, 7vw), 35px);
+        font-size: clamp(19px, min(3.4svh, 7vw), 35px);
     }
 
     /* Capped against width too: "Haartransplantationen" is 21 unbreakable
        characters and has to clear a half-width card at 344px. */
     .stat-label {
-        font-size: clamp(11px, min(1.85dvh, 3.7vw), 15px);
+        font-size: clamp(11px, min(1.85svh, 3.7vw), 15px);
     }
 
     .feature-icon {
-        width: clamp(42px, 5.2dvh, 62px);
-        height: clamp(42px, 5.2dvh, 62px);
-        margin-bottom: clamp(8px, 1.3dvh, 14px);
-        font-size: clamp(19px, 2.5dvh, 27px);
+        width: clamp(42px, 5.2svh, 62px);
+        height: clamp(42px, 5.2svh, 62px);
+        margin-bottom: clamp(8px, 1.3svh, 14px);
+        font-size: clamp(19px, 2.5svh, 27px);
     }
 
     .feature-item,
     .stat-item {
-        padding: clamp(13px, 2dvh, 24px) clamp(11px, 3vw, 18px);
+        padding: clamp(13px, 2svh, 24px) clamp(11px, 3vw, 18px);
     }
 
     .features-grid {
-        gap: clamp(9px, 1.5dvh, 16px);
+        gap: clamp(9px, 1.5svh, 16px);
     }
 }
 
@@ -5044,13 +5097,18 @@ body.dark-mode .iti__country.iti__highlight {
 
 @media (max-width: 500px) {
 
+    /* Three `auto` tracks plus `justify-content: center` sized the whole grid
+       to the width of the three little controls, and the slider — which spans
+       all of them — was dragged in with it, sitting off to one side instead of
+       filling the row. The 1fr spacers at both ends do the centring instead:
+       they absorb the free space, so the tracks always span the full container
+       and the slider gets the whole width back. */
     .testimonials-wrapper {
         display: grid;
-        grid-template-columns: auto auto auto;
-        justify-content: center;
+        grid-template-columns: 1fr auto auto auto 1fr;
         align-items: center;
         column-gap: 14px;
-        row-gap: clamp(10px, 1.8dvh, 18px);
+        row-gap: clamp(10px, 1.8svh, 18px);
     }
 
     .testimonials-slider {
@@ -5072,12 +5130,13 @@ body.dark-mode .iti__country.iti__highlight {
         border: 1px solid rgba(26, 95, 122, 0.12);
     }
 
+    /* Columns 2/3/4 — 1 and 5 are the centring spacers. */
     .testimonials-prev {
-        grid-column: 1;
+        grid-column: 2;
     }
 
     .testimonials-next {
-        grid-column: 3;
+        grid-column: 4;
     }
 
     .testimonials-prev:hover,
@@ -5092,12 +5151,12 @@ body.dark-mode .iti__country.iti__highlight {
     /* Qualified so it outranks the base `display: none` below, which has to
        stay after this block in the file. */
     .testimonials-wrapper .testimonials-count {
-        grid-column: 2;
+        grid-column: 3;
         grid-row: 2;
         display: block;
         min-width: 56px;
         text-align: center;
-        font-size: clamp(13px, 1.9dvh, 15px);
+        font-size: clamp(13px, 1.9svh, 15px);
         font-weight: 600;
         color: var(--primary-color);
         font-variant-numeric: tabular-nums;
@@ -5148,36 +5207,55 @@ body.dark-mode .iti__country.iti__highlight {
 /* ==========================================================================
    iOS SAFE AREA
    The pages are served with viewport-fit=cover so the artwork runs edge to
-   edge, including behind the status bar. Two consequences to handle: the bar
-   area and the rubber-band overscroll both paint the <html> background (white
-   by default, which is the white strip at the top of Safari), and the header
-   would otherwise sit underneath the status bar.
+   edge, including behind the status bar — and it is meant to stay that way.
+
+   The header used to sit at top: 0 and paint its own background across the
+   status bar, which put a solid coloured slab above the logo row: it read as a
+   bar bolted onto the top of the screen rather than as part of the page. The
+   header now *starts* below the inset instead, so the strip behind the clock
+   and battery shows whatever the page has there — the hero photo at the top,
+   the section behind it once you scroll.
+
+   The <html> background is what the rubber-band overscroll paints, so it
+   follows the page rather than being a colour of its own.
    ========================================================================== */
 
 html {
-    background-color: var(--primary-dark);
+    background-color: #ffffff;
+}
+
+/* script.js mirrors the theme flag onto <html> for exactly this. */
+html.dark-mode {
+    background-color: #1a1a1a;
 }
 
 body.dark-mode {
     background-color: var(--bg-white);
 }
 
+.header {
+    /* Not padding: padding is inside the background box and would paint the
+       status bar again. Offsetting the fixed element itself leaves the strip
+       above it genuinely empty. */
+    top: env(safe-area-inset-top);
+}
+
 .header .header-content {
-    padding-top: calc(20px + env(safe-area-inset-top));
+    padding-top: 20px;
 }
 
 @media (max-width: 900px) {
 
     .header .header-content {
-        padding-top: calc(14px + env(safe-area-inset-top));
+        padding-top: 14px;
     }
 
-    /* Sections start below the header, which is now taller by the inset. */
+    /* Sections start below the header, which now hangs below the inset. */
     section:not(.hero),
     .cfs-left,
     .cfs-right {
-        padding-top: calc(clamp(72px, 10dvh, 104px) + env(safe-area-inset-top));
-        padding-bottom: calc(clamp(20px, 4dvh, 44px) + env(safe-area-inset-bottom));
+        padding-top: calc(clamp(72px, 10svh, 104px) + env(safe-area-inset-top));
+        padding-bottom: calc(clamp(20px, 4svh, 44px) + env(safe-area-inset-bottom));
     }
 
     .services-carousel-section,
@@ -5194,7 +5272,7 @@ body.dark-mode {
 
 @media (max-width: 480px) {
     .header .header-content {
-        padding-top: calc(12px + env(safe-area-inset-top));
+        padding-top: 12px;
     }
 }
 
@@ -5225,39 +5303,39 @@ body.dark-mode {
     }
 
     .svc-slide-img img {
-        height: clamp(180px, 26dvh, 300px);
+        height: clamp(180px, 26svh, 300px);
     }
 
     .svc-prev,
     .svc-next {
-        top: clamp(90px, 13dvh, 150px);
+        top: clamp(90px, 13svh, 150px);
     }
 
     .svc-slide-content h2 {
-        font-size: clamp(21px, 3.1dvh, 28px);
+        font-size: clamp(21px, 3.1svh, 28px);
     }
 
     .svc-slide-content h2 span {
-        font-size: clamp(13px, 1.9dvh, 16px);
+        font-size: clamp(13px, 1.9svh, 16px);
     }
 
     .svc-details {
-        margin-bottom: clamp(12px, 1.9dvh, 20px);
+        margin-bottom: clamp(12px, 1.9svh, 20px);
     }
 
     .svc-detail {
-        font-size: clamp(12px, 1.7dvh, 14.5px);
-        padding: clamp(8px, 1.3dvh, 13px) clamp(12px, 3.4vw, 18px);
+        font-size: clamp(12px, 1.7svh, 14.5px);
+        padding: clamp(8px, 1.3svh, 13px) clamp(12px, 3.4vw, 18px);
     }
 
     .svc-features li {
-        font-size: clamp(13px, 1.75dvh, 15px);
+        font-size: clamp(13px, 1.75svh, 15px);
         line-height: 1.5;
     }
 
     .svc-features {
-        gap: clamp(5px, 0.9dvh, 10px);
-        padding: clamp(12px, 1.9dvh, 18px) clamp(14px, 4vw, 20px);
+        gap: clamp(5px, 0.9svh, 10px);
+        padding: clamp(12px, 1.9svh, 18px) clamp(14px, 4vw, 20px);
     }
 }
 
@@ -5298,20 +5376,20 @@ body.dark-mode {
     }
 
     .feature-item p {
-        font-size: clamp(11.5px, 1.5dvh, 13.5px);
+        font-size: clamp(11.5px, 1.5svh, 13.5px);
         line-height: 1.4;
     }
 
     .feature-item,
     .stat-item {
-        padding: clamp(12px, 1.7dvh, 22px) clamp(10px, 2.8vw, 16px);
+        padding: clamp(12px, 1.7svh, 22px) clamp(10px, 2.8vw, 16px);
     }
 
     .feature-icon {
-        width: clamp(38px, 4.4dvh, 54px);
-        height: clamp(38px, 4.4dvh, 54px);
-        margin-bottom: clamp(7px, 1.1dvh, 12px);
-        font-size: clamp(17px, 2.1dvh, 24px);
+        width: clamp(38px, 4.4svh, 54px);
+        height: clamp(38px, 4.4svh, 54px);
+        margin-bottom: clamp(7px, 1.1svh, 12px);
+        font-size: clamp(17px, 2.1svh, 24px);
     }
 }
 
@@ -5320,12 +5398,12 @@ body.dark-mode {
 @media (max-width: 700px) {
 
     .svc-slide-img img {
-        height: clamp(165px, 21dvh, 260px);
+        height: clamp(165px, 21svh, 260px);
     }
 
     .svc-prev,
     .svc-next {
-        top: clamp(82px, 10.5dvh, 130px);
+        top: clamp(82px, 10.5svh, 130px);
     }
 }
 
@@ -5361,5 +5439,353 @@ body.dark-mode {
     .svc-detail {
         font-size: 11.5px;
         padding: 7px 11px;
+    }
+}
+
+
+/* ==========================================================================
+   SCROLL PERFORMANCE — MOBILE & TABLET
+   Everything in this block exists for one reason: keep the main thread and the
+   compositor idle while the visitor is scrolling. Anything that has to be
+   re-rasterised on every frame — a live blur behind a fixed bar, an animated
+   80px blur, a background locked to the viewport — is what turns a scroll into
+   the stutter/stick the site had on phones, and it is worst on an upward
+   scroll, when the browser is also animating its own address bar back in.
+   Last block in the file so it wins on source order.
+   ========================================================================== */
+
+@media (max-width: 1024px) {
+
+    /* A fixed bar with backdrop-filter makes the browser re-blur whatever
+       passes behind it, every frame, for the whole length of the scroll. The
+       background was already 95% opaque, so the blur bought almost nothing. */
+    .header.scrolled {
+        background-color: rgba(26, 95, 122, 0.97);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+
+    /* Two blurred blobs, 400px and 500px wide, blur(80px), animating forever.
+       They are decoration; on a phone GPU they are the single most expensive
+       thing on the results section. Keep the colour wash, drop the animation
+       and most of the blur radius. */
+    .results-glass::before,
+    .results-glass::after {
+        animation: none;
+        filter: blur(40px);
+        opacity: 0.7;
+    }
+
+    /* Backgrounds pinned to the viewport are repainted on every scroll frame
+       (and are simply ignored on iOS). Re-stated here so no later rule can
+       reintroduce one. */
+    .services-carousel-section,
+    .marquee-section,
+    .contact-final-section,
+    .hero {
+        background-attachment: scroll;
+    }
+
+    /* Vertical rubber-banding inside the horizontal card rows used to bubble
+       out to the document and fight the page scroll. */
+    .services-grid,
+    .results-grid,
+    .testimonials-slider,
+    .marquee-track {
+        overscroll-behavior-y: auto;
+        overscroll-behavior-x: contain;
+    }
+}
+
+/* Phones only: the marquee is a decorative infinite animation. Running it
+   while the visitor is scrolling elsewhere on the page costs compositor time
+   for something that is off-screen most of the time. */
+@media (max-width: 700px) {
+    .marquee-track {
+        animation-duration: 60s;
+    }
+}
+
+
+/* ==========================================================================
+   TOASTS — in-page notifications
+   The replacement for window.alert(): a card in the page's own type and
+   colours instead of a system dialog stamped with the vercel.app hostname.
+   Nothing here blocks the page, so the visitor can keep reading while it is
+   on screen. Built by showToast() in script.js.
+   ========================================================================== */
+
+.toast-container {
+    position: fixed;
+    z-index: 2000;
+    /* Clear of the fixed header, and of the iOS status bar it now sits under. */
+    top: calc(20px + env(safe-area-inset-top) + 84px);
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: min(400px, calc(100vw - 40px));
+    /* The container spans a corner of the screen the whole time; without this
+       it would swallow clicks on whatever is behind it. The toasts themselves
+       take their pointer events back. */
+    pointer-events: none;
+}
+
+.toast {
+    pointer-events: auto;
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: start;
+    gap: 14px;
+    padding: 16px 16px 18px;
+    border-radius: 14px;
+    background: #fff;
+    color: var(--text-dark);
+    box-shadow: 0 18px 40px rgba(9, 30, 42, 0.18), 0 2px 6px rgba(9, 30, 42, 0.08);
+    border: 1px solid rgba(9, 30, 42, 0.07);
+    /* The coloured edge is the type at a glance, before any text is read. */
+    border-left: 4px solid var(--toast-accent, var(--primary-color));
+    overflow: hidden;
+
+    opacity: 0;
+    transform: translateX(24px) scale(0.98);
+    transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.toast--in {
+    opacity: 1;
+    transform: none;
+}
+
+.toast--out {
+    opacity: 0;
+    transform: translateX(24px) scale(0.98);
+}
+
+.toast--success {
+    --toast-accent: #1e9e6a;
+}
+
+.toast--error {
+    --toast-accent: #d8412f;
+}
+
+.toast--info {
+    --toast-accent: var(--primary-light);
+}
+
+.toast__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--toast-accent) 14%, transparent);
+    color: var(--toast-accent);
+}
+
+/* color-mix is recent; without it the tint falls back to a plain light grey
+   disc, which still reads correctly. */
+@supports not (background: color-mix(in srgb, red 10%, transparent)) {
+    .toast__icon {
+        background: rgba(0, 0, 0, 0.06);
+    }
+}
+
+.toast__icon svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.toast__body {
+    min-width: 0;
+}
+
+.toast__title {
+    display: block;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--toast-accent);
+    margin-bottom: 3px;
+}
+
+.toast__message {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text-light);
+    /* Endpoint errors can be long; let them wrap rather than push the card. */
+    overflow-wrap: anywhere;
+}
+
+.toast__close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    padding: 0;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.toast__close:hover,
+.toast__close:focus-visible {
+    background: rgba(0, 0, 0, 0.06);
+    color: var(--text-dark);
+}
+
+.toast__close svg {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+}
+
+/* Shows how long is left, so the card disappearing is never a surprise. */
+.toast__progress {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 3px;
+    width: 100%;
+    transform-origin: left center;
+    background: var(--toast-accent);
+    opacity: 0.45;
+    animation: toastProgress linear forwards;
+}
+
+.toast:hover .toast__progress,
+.toast:focus-within .toast__progress {
+    animation-play-state: paused;
+}
+
+@keyframes toastProgress {
+    from {
+        transform: scaleX(1);
+    }
+
+    to {
+        transform: scaleX(0);
+    }
+}
+
+/* --- Dark mode --- */
+body.dark-mode .toast {
+    background: #22303a;
+    color: #f0f0f0;
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .toast__message {
+    color: #c2ced6;
+}
+
+body.dark-mode .toast__close:hover,
+body.dark-mode .toast__close:focus-visible {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+body.dark-mode .toast--info {
+    --toast-accent: #4fb3cc;
+}
+
+body.dark-mode .toast--success {
+    --toast-accent: #35c489;
+}
+
+body.dark-mode .toast--error {
+    --toast-accent: #ff7a6b;
+}
+
+/* --- Phones: full width along the top, where nothing else lives. The
+   WhatsApp button owns the bottom-right corner. --- */
+@media (max-width: 600px) {
+    .toast-container {
+        top: calc(12px + env(safe-area-inset-top) + 64px);
+        right: 12px;
+        left: 12px;
+        width: auto;
+        gap: 10px;
+    }
+
+    .toast {
+        padding: 14px 14px 16px;
+        gap: 12px;
+        border-radius: 12px;
+        transform: translateY(-16px) scale(0.98);
+    }
+
+    .toast--out {
+        transform: translateY(-16px) scale(0.98);
+    }
+
+    .toast__title {
+        font-size: 14.5px;
+    }
+
+    .toast__message {
+        font-size: 13.5px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .toast {
+        transform: none;
+    }
+
+    .toast--out {
+        transform: none;
+    }
+
+    /* The bar is a timer, not decoration — it keeps running, it just doesn't
+       animate smoothly. The global reduced-motion rule already collapses the
+       duration, so re-state it here. */
+    .toast__progress {
+        animation: none;
+        opacity: 0.25;
+    }
+}
+
+/* ========== SUBMIT BUTTON: SENDING STATE ========== */
+.btn-submit-icon.is-submitting {
+    opacity: 0.75;
+    cursor: progress;
+}
+
+.btn-spinner {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    margin-left: 10px;
+    vertical-align: -2px;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: btnSpin 0.7s linear infinite;
+}
+
+@keyframes btnSpin {
+    to {
+        transform: rotate(360deg);
     }
 }

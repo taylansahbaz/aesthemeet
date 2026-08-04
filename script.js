@@ -170,10 +170,18 @@ function setThemeIcon(isDark) {
     icon.textContent = isDark ? '☀️' : '🌙';
 }
 
+// The <html> background is what iOS paints in the rubber-band overscroll and
+// around the safe areas, and it can't read a class that lives on <body>, so
+// the flag is mirrored onto the root element.
+function setThemeClass(isDark) {
+    document.documentElement.classList.toggle('dark-mode', isDark);
+}
+
 // Check for saved theme preference or default to light mode
 const currentTheme = localStorage.getItem('theme') || 'light';
 if (currentTheme === 'dark') {
     body.classList.add('dark-mode');
+    setThemeClass(true);
     setThemeIcon(true);
 }
 
@@ -181,6 +189,7 @@ if (themeToggle) {
     themeToggle.addEventListener('click', () => {
         const isDark = body.classList.toggle('dark-mode');
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        setThemeClass(isDark);
         setThemeIcon(isDark);
     });
 }
@@ -271,6 +280,159 @@ faqItems.forEach(item => {
     });
 });
 
+// ========== TOAST NOTIFICATIONS ==========
+// Replaces window.alert(), which blocks the page, can't be styled, is stamped
+// with the vercel.app hostname, and on a phone looks like a browser error
+// rather than a reply from the site. Everything user-facing goes through
+// showToast() so success and failure look like they belong to the page.
+
+const TOAST_TEXT = {
+    tr: { success: 'Başarılı', error: 'Bir sorun oluştu', info: 'Bilgi', close: 'Kapat' },
+    en: { success: 'Success', error: 'Something went wrong', info: 'Information', close: 'Close' },
+    de: { success: 'Erfolgreich', error: 'Ein Fehler ist aufgetreten', info: 'Hinweis', close: 'Schließen' }
+};
+
+const TOAST_ICONS = {
+    success: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6.5 9.5 17 4 11.5"/></svg>',
+    error: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7v6"/><path d="M12 16.8v.2"/><circle cx="12" cy="12" r="9"/></svg>',
+    info: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 11v6"/><path d="M12 7.2v.2"/><circle cx="12" cy="12" r="9"/></svg>'
+};
+
+// An error is worth reading twice as long as a confirmation.
+const TOAST_DURATION = { success: 5000, info: 5000, error: 8000 };
+const TOAST_MAX = 3;
+
+let toastContainer = null;
+
+function getToastContainer() {
+    if (toastContainer && document.body.contains(toastContainer)) return toastContainer;
+
+    toastContainer = document.createElement('div');
+    toastContainer.className = 'toast-container';
+    // polite: a confirmation shouldn't interrupt whatever a screen reader is
+    // in the middle of. Errors override this per-toast below.
+    toastContainer.setAttribute('aria-live', 'polite');
+    toastContainer.setAttribute('aria-atomic', 'false');
+    document.body.appendChild(toastContainer);
+    return toastContainer;
+}
+
+function dismissToast(toast) {
+    if (!toast || toast.dataset.closing === '1') return;
+    toast.dataset.closing = '1';
+    clearTimeout(Number(toast.dataset.timer));
+    toast.classList.add('toast--out');
+
+    // transitionend alone would strand the node if the transition never runs
+    // (reduced motion, a backgrounded tab), so a timer backs it up.
+    let removed = false;
+    const remove = () => {
+        if (removed) return;
+        removed = true;
+        toast.remove();
+    };
+    toast.addEventListener('transitionend', remove, { once: true });
+    setTimeout(remove, 400);
+}
+
+/**
+ * @param {string} message  the line the visitor reads
+ * @param {'success'|'error'|'info'} type
+ * @param {{title?: string, duration?: number}} [options]
+ */
+function showToast(message, type = 'info', options = {}) {
+    if (!message) return null;
+
+    const kind = TOAST_ICONS[type] ? type : 'info';
+    const lang = (document.documentElement.lang || 'tr').slice(0, 2).toLowerCase();
+    const text = TOAST_TEXT[lang] || TOAST_TEXT.tr;
+    const duration = options.duration != null ? options.duration : TOAST_DURATION[kind];
+
+    const container = getToastContainer();
+
+    // Keep the stack short: past three, the oldest is already read.
+    const live = container.querySelectorAll('.toast:not(.toast--out)');
+    for (let i = 0; i <= live.length - TOAST_MAX; i++) {
+        dismissToast(live[i]);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = 'toast toast--' + kind;
+    toast.setAttribute('role', kind === 'error' ? 'alert' : 'status');
+    if (kind === 'error') toast.setAttribute('aria-live', 'assertive');
+
+    const icon = document.createElement('span');
+    icon.className = 'toast__icon';
+    icon.innerHTML = TOAST_ICONS[kind];
+
+    const bodyEl = document.createElement('div');
+    bodyEl.className = 'toast__body';
+
+    const title = document.createElement('strong');
+    title.className = 'toast__title';
+    title.textContent = options.title || text[kind];
+
+    const msg = document.createElement('p');
+    msg.className = 'toast__message';
+    // textContent, not innerHTML: some of these strings come back from the
+    // form endpoint.
+    msg.textContent = message;
+
+    bodyEl.append(title, msg);
+
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'toast__close';
+    close.setAttribute('aria-label', text.close);
+    close.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>';
+    close.addEventListener('click', () => dismissToast(toast));
+
+    const progress = document.createElement('span');
+    progress.className = 'toast__progress';
+    // Set before the node is in the document: the CSS declares the animation
+    // without a duration, so an element that lands in the DOM first would run
+    // it to completion in one frame and flash an already-empty bar.
+    if (duration > 0) {
+        progress.style.animationDuration = duration + 'ms';
+    } else {
+        progress.style.display = 'none';
+    }
+
+    toast.append(icon, bodyEl, close, progress);
+    container.appendChild(toast);
+
+    if (duration > 0) {
+        toast.dataset.timer = String(setTimeout(() => dismissToast(toast), duration));
+
+        // Don't time out a message the visitor is currently reading or has
+        // tabbed into. The CSS pauses the progress bar off the same states.
+        const pause = () => clearTimeout(Number(toast.dataset.timer));
+        const resume = () => {
+            if (toast.dataset.closing === '1') return;
+            toast.dataset.timer = String(setTimeout(() => dismissToast(toast), 2500));
+        };
+        toast.addEventListener('mouseenter', pause);
+        toast.addEventListener('mouseleave', resume);
+        toast.addEventListener('focusin', pause);
+        toast.addEventListener('focusout', resume);
+    }
+
+    // Force the start state to be computed before flipping to the end state,
+    // otherwise the two land in the same style recalculation and the entrance
+    // transition never runs. Reading a layout property is what commits it.
+    void toast.offsetHeight;
+    toast.classList.add('toast--in');
+
+    return toast;
+}
+
+// Escape closes the newest one, the way a dialog would.
+document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || !toastContainer) return;
+    const open = toastContainer.querySelectorAll('.toast:not(.toast--out)');
+    if (open.length) dismissToast(open[open.length - 1]);
+});
+
 // ========== FORM SUBMISSION ==========
 const consultationForm = document.getElementById('consultationForm');
 let iti;
@@ -285,8 +447,61 @@ if (consultationForm) {
         });
     }
 
+    // The request is no longer announced by a blocking alert, so the button
+    // has to show that something is happening — and stay disabled until it
+    // resolves, otherwise an impatient second tap sends the form twice.
+    const submitBtn = consultationForm.querySelector('button[type="submit"], input[type="submit"]');
+    // innerHTML, not textContent: the button carries an arrow icon in a span
+    // that has to survive being put back.
+    const submitMarkup = submitBtn ? submitBtn.innerHTML : '';
+    const sendingText = {
+        tr: 'Gönderiliyor...',
+        en: 'Sending...',
+        de: 'Wird gesendet...'
+    };
+
+    function setSubmitting(busy) {
+        if (!submitBtn) return;
+        submitBtn.disabled = busy;
+        submitBtn.classList.toggle('is-submitting', busy);
+
+        if (!busy) {
+            submitBtn.innerHTML = submitMarkup;
+            return;
+        }
+
+        const l = (document.documentElement.lang || 'tr').slice(0, 2).toLowerCase();
+        submitBtn.textContent = sendingText[l] || sendingText.tr;
+        const spinner = document.createElement('span');
+        spinner.className = 'btn-spinner';
+        spinner.setAttribute('aria-hidden', 'true');
+        submitBtn.appendChild(spinner);
+    }
+
+    const invalidPhoneText = {
+        tr: 'Telefon numarası geçerli görünmüyor. Lütfen ülke kodunu ve numarayı kontrol edin.',
+        en: "That phone number doesn't look valid. Please check the country code and the number.",
+        de: 'Die Telefonnummer scheint ungültig zu sein. Bitte prüfen Sie Ländervorwahl und Nummer.'
+    };
+
     consultationForm.addEventListener('submit', function (e) {
         e.preventDefault();
+        if (submitBtn && submitBtn.disabled) return;
+
+        // A wrong phone number is the one mistake the form can't recover from —
+        // it's the field we call people back on. Guarded on the utils script
+        // because isValidNumber() returns false without it, and that script
+        // comes from a CDN: if it fails to load, every submission would be
+        // rejected here for no reason.
+        if (iti && window.intlTelInputUtils && !iti.isValidNumber()) {
+            const l = (document.documentElement.lang || 'tr').slice(0, 2).toLowerCase();
+            showToast(invalidPhoneText[l] || invalidPhoneText.tr, 'error');
+            const tel = consultationForm.querySelector('input[type="tel"]');
+            if (tel) tel.focus();
+            return;
+        }
+
+        setSubmitting(true);
 
         // Get form values
         const name = this.querySelector('input[type="text"]').value;
@@ -339,24 +554,31 @@ if (consultationForm) {
                 }
             }).then(response => {
                 if (response.ok) {
-                    alert(successMessages[lang] || successMessages['tr']);
+                    showToast(successMessages[lang] || successMessages['tr'], 'success');
                     this.reset();
                 } else {
                     response.json().then(data => {
                         if (Object.hasOwn(data, 'errors')) {
-                            alert(data["errors"].map(error => error["message"]).join(", "));
+                            showToast(data["errors"].map(error => error["message"]).join(", "), 'error');
                         } else {
-                            alert(errorMessages[lang] || errorMessages['tr']);
+                            showToast(errorMessages[lang] || errorMessages['tr'], 'error');
                         }
+                    }).catch(() => {
+                        // A non-JSON error body would otherwise leave the
+                        // visitor with no answer at all.
+                        showToast(errorMessages[lang] || errorMessages['tr'], 'error');
                     })
                 }
             }).catch(error => {
-                alert(errorMessages[lang] || errorMessages['tr']);
+                showToast(errorMessages[lang] || errorMessages['tr'], 'error');
+            }).finally(() => {
+                setSubmitting(false);
             });
         } else {
             // Fallback if Formspree action isn't set properly
-            alert(successMessages[lang] || successMessages['tr']);
+            showToast(successMessages[lang] || successMessages['tr'], 'success');
             this.reset();
+            setSubmitting(false);
         }
     });
 }
@@ -424,29 +646,93 @@ function initBeforeAfterSliders() {
     sliders.forEach(slider => {
         const beforeImg = slider.querySelector('.img-before');
         const handle = slider.querySelector('.slider-handle');
-        let isDragging = false;
 
-        function moveSlider(e) {
-            if (!isDragging) return;
+        let isDragging = false;   // mouse only: pressed inside the slider
+        let touchId = null;       // the finger that started on the slider
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchIsDrag = false;  // stays false while the gesture looks like a page scroll
+        let rafId = 0;
+        let pendingX = 0;
+
+        // Touch handling used to flip a plain `isDragging` flag on touchstart and
+        // then run on every window touchmove. Starting a normal vertical page
+        // scroll with a finger on a slider therefore forced a
+        // getBoundingClientRect + two style writes on every single touchmove —
+        // layout thrash for the whole duration of the scroll, and the handle
+        // jumped as a side effect. A gesture now only counts as a drag once it
+        // proves it is mostly horizontal.
+        const DRAG_THRESHOLD = 10; // px of movement before deciding the axis
+
+        function paint() {
+            rafId = 0;
             const rect = slider.getBoundingClientRect();
-            // Get x position relative to the slider
-            let x = (e.type.includes('mouse') ? e.pageX : e.touches[0].pageX) - rect.left - window.scrollX;
-            // Calculate percentage
-            let percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
-
-            // Apply clip-path to before image (inset from right side)
-            beforeImg.style.clipPath = `inset(0 ${100 - Math.max(0, Math.min(100, percentage))}% 0 0)`;
+            if (!rect.width) return;
+            const percentage = Math.max(0, Math.min(100, ((pendingX - rect.left) / rect.width) * 100));
+            beforeImg.style.clipPath = `inset(0 ${100 - percentage}% 0 0)`;
             handle.style.left = `${percentage}%`;
         }
 
-        slider.addEventListener('mousedown', () => isDragging = true);
-        slider.addEventListener('touchstart', () => isDragging = true, { passive: true });
+        // Batch into the next frame: several move events can land inside one
+        // frame, and each one on its own would force a synchronous layout.
+        function schedule(clientX) {
+            pendingX = clientX;
+            if (!rafId) rafId = requestAnimationFrame(paint);
+        }
 
-        window.addEventListener('mouseup', () => isDragging = false);
-        window.addEventListener('touchend', () => isDragging = false);
+        slider.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            schedule(e.clientX);
+            e.preventDefault();
+        });
+        window.addEventListener('mousemove', (e) => {
+            if (isDragging) schedule(e.clientX);
+        });
+        window.addEventListener('mouseup', () => { isDragging = false; });
 
-        window.addEventListener('mousemove', moveSlider);
-        window.addEventListener('touchmove', moveSlider, { passive: true });
+        slider.addEventListener('touchstart', (e) => {
+            if (touchId !== null || e.touches.length !== 1) return;
+            const t = e.touches[0];
+            touchId = t.identifier;
+            touchStartX = t.clientX;
+            touchStartY = t.clientY;
+            touchIsDrag = false;
+        }, { passive: true });
+
+        slider.addEventListener('touchmove', (e) => {
+            if (touchId === null) return;
+
+            let t = null;
+            for (let i = 0; i < e.touches.length; i++) {
+                if (e.touches[i].identifier === touchId) { t = e.touches[i]; break; }
+            }
+            if (!t) return;
+
+            if (!touchIsDrag) {
+                const dx = Math.abs(t.clientX - touchStartX);
+                const dy = Math.abs(t.clientY - touchStartY);
+                if (dx < DRAG_THRESHOLD && dy < DRAG_THRESHOLD) return;
+                if (dy >= dx) {
+                    // Vertical: this is the visitor scrolling the page. Bow out
+                    // for the rest of the gesture and touch nothing.
+                    touchId = null;
+                    return;
+                }
+                touchIsDrag = true;
+            }
+
+            // Only now, on a confirmed horizontal drag, stop the page from
+            // scrolling sideways underneath the handle.
+            if (e.cancelable) e.preventDefault();
+            schedule(t.clientX);
+        }, { passive: false });
+
+        function endTouch() {
+            touchId = null;
+            touchIsDrag = false;
+        }
+        slider.addEventListener('touchend', endTouch, { passive: true });
+        slider.addEventListener('touchcancel', endTouch, { passive: true });
     });
 }
 
@@ -463,8 +749,10 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 
         // The header is fixed, so scrolling to the raw offset buries the top of
         // the section underneath it — most noticeable on mobile, where the
-        // section heading disappears entirely.
-        const headerHeight = siteHeader ? siteHeader.offsetHeight : 0;
+        // section heading disappears entirely. `bottom` rather than
+        // `offsetHeight`: the header starts below the iOS status bar inset, so
+        // its height alone is short by that inset.
+        const headerHeight = siteHeader ? siteHeader.getBoundingClientRect().bottom : 0;
         const top = target.getBoundingClientRect().top + window.pageYOffset - headerHeight;
 
         window.scrollTo({
